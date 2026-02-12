@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETF 持股追蹤 Pro - Debug 版</title>
-    <!-- Chart.js CDN -->
+    <title>ETF 持股追蹤 Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Lightweight Charts CDN -->
     <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -54,13 +52,12 @@
             font-size: 16px;
         }
 
-        /* Debug 面板樣式 */
         .debug-panel {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 350px;
-            max-height: 300px;
+            width: 400px;
+            max-height: 400px;
             background: #1E293B;
             color: #E2E8F0;
             border-radius: 12px;
@@ -73,9 +70,7 @@
             display: none;
         }
 
-        .debug-panel.show {
-            display: block;
-        }
+        .debug-panel.show { display: block; }
 
         .debug-panel-header {
             display: flex;
@@ -89,6 +84,7 @@
         .debug-panel-title {
             font-weight: bold;
             color: #10B981;
+            font-size: 14px;
         }
 
         .debug-close {
@@ -104,13 +100,13 @@
         }
 
         .debug-log {
-            line-height: 1.6;
+            line-height: 1.8;
             white-space: pre-wrap;
             word-break: break-word;
         }
 
         .debug-log .success { color: #10B981; }
-        .debug-log .error { color: #EF4444; }
+        .debug-log .error { color: #EF4444; font-weight: bold; }
         .debug-log .warning { color: #F59E0B; }
         .debug-log .info { color: #60A5FA; }
 
@@ -132,6 +128,7 @@
 
         .debug-toggle:hover {
             background: #10B981;
+            transform: translateY(-2px);
         }
 
         .loading-overlay {
@@ -261,9 +258,7 @@
             box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
         }
 
-        .main-tab .tab-icon {
-            font-size: 20px;
-        }
+        .main-tab .tab-icon { font-size: 20px; }
 
         .mobile-nav-grid {
             display: none;
@@ -444,9 +439,7 @@
             transition: background 0.3s;
         }
 
-        .calendar-table td:hover {
-            background: var(--bg-light);
-        }
+        .calendar-table td:hover { background: var(--bg-light); }
 
         .calendar-table td.today-marker {
             background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
@@ -512,9 +505,7 @@
             font-weight: 800;
         }
 
-        .change-section {
-            margin-bottom: 14px;
-        }
+        .change-section { margin-bottom: 14px; }
 
         .change-section-title {
             font-size: 15px;
@@ -693,9 +684,7 @@
         .stat-value.positive { color: var(--success); }
         .stat-value.negative { color: var(--danger); }
 
-        .search-box {
-            margin-bottom: 24px;
-        }
+        .search-box { margin-bottom: 24px; }
 
         .search-box input {
             width: 100%;
@@ -984,17 +973,6 @@
             color: var(--text);
         }
 
-        .kline-status {
-            background: #FFF3CD;
-            border: 2px solid #FFC107;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            color: #856404;
-            font-size: 14px;
-            line-height: 1.8;
-        }
-
         .modal-table {
             max-height: 400px;
             overflow-y: auto;
@@ -1034,9 +1012,7 @@
             font-size: 15px;
         }
 
-        .modal-table tbody tr:hover {
-            background: var(--bg-light);
-        }
+        .modal-table tbody tr:hover { background: var(--bg-light); }
 
         .close-btn { text-align: center; }
 
@@ -1050,14 +1026,11 @@
             font-size: 16px;
         }
 
-        /* RWD */
         @media (max-width: 768px) {
             body { font-size: 15px; }
             .hero-header { padding: 24px 16px; }
             .hero-title { font-size: 22px; gap: 8px; }
             .hero-icon { font-size: 26px; }
-            .hero-subtitle { font-size: 13px; margin-bottom: 14px; }
-            .hero-date { font-size: 12px; padding: 7px 16px; }
             .container { padding: 0 10px 30px; }
             .main-tabs-container { display: none; }
             .mobile-nav-grid { display: grid; }
@@ -1065,13 +1038,12 @@
             .calendar-table { display: none; }
             .mobile-calendar { display: block; }
             .modal-content { margin: 0; border-radius: 0; min-height: 100vh; padding: 20px 16px; }
-            .debug-panel { width: 90%; right: 5%; left: 5%; bottom: 10px; max-height: 200px; }
+            .debug-panel { width: 90%; right: 5%; left: 5%; bottom: 10px; max-height: 250px; font-size: 11px; }
             .debug-toggle { right: 10px; bottom: 10px; padding: 10px 16px; font-size: 12px; }
         }
     </style>
 </head>
 <body>
-    <!-- Debug 面板 -->
     <button class="debug-toggle" onclick="toggleDebug()">🐛 除錯面板</button>
     <div class="debug-panel" id="debugPanel">
         <div class="debug-panel-header">
@@ -1098,42 +1070,18 @@
     <div class="container">
         <div class="main-tabs-container">
             <div class="main-tabs">
-                <button class="main-tab active" data-mode="dashboard">
-                    <span class="tab-icon">📅</span>
-                    <span>每週行事曆</span>
-                </button>
-                <button class="main-tab" data-mode="changes">
-                    <span class="tab-icon">🔄</span>
-                    <span>今日變動</span>
-                </button>
-                <button class="main-tab" data-mode="history">
-                    <span class="tab-icon">📈</span>
-                    <span>歷史查詢</span>
-                </button>
-                <button class="main-tab" data-mode="search">
-                    <span class="tab-icon">🔍</span>
-                    <span>股票搜尋</span>
-                </button>
+                <button class="main-tab active" data-mode="dashboard"><span class="tab-icon">📅</span><span>每週行事曆</span></button>
+                <button class="main-tab" data-mode="changes"><span class="tab-icon">🔄</span><span>今日變動</span></button>
+                <button class="main-tab" data-mode="history"><span class="tab-icon">📈</span><span>歷史查詢</span></button>
+                <button class="main-tab" data-mode="search"><span class="tab-icon">🔍</span><span>股票搜尋</span></button>
             </div>
         </div>
 
         <div class="mobile-nav-grid">
-            <div class="mobile-nav-card active" data-mode="dashboard">
-                <div class="mobile-nav-icon">📅</div>
-                <div class="mobile-nav-label">每週行事曆</div>
-            </div>
-            <div class="mobile-nav-card" data-mode="changes">
-                <div class="mobile-nav-icon">🔄</div>
-                <div class="mobile-nav-label">今日變動</div>
-            </div>
-            <div class="mobile-nav-card" data-mode="history">
-                <div class="mobile-nav-icon">📈</div>
-                <div class="mobile-nav-label">歷史查詢</div>
-            </div>
-            <div class="mobile-nav-card" data-mode="search">
-                <div class="mobile-nav-icon">🔍</div>
-                <div class="mobile-nav-label">股票搜尋</div>
-            </div>
+            <div class="mobile-nav-card active" data-mode="dashboard"><div class="mobile-nav-icon">📅</div><div class="mobile-nav-label">每週行事曆</div></div>
+            <div class="mobile-nav-card" data-mode="changes"><div class="mobile-nav-icon">🔄</div><div class="mobile-nav-label">今日變動</div></div>
+            <div class="mobile-nav-card" data-mode="history"><div class="mobile-nav-icon">📈</div><div class="mobile-nav-label">歷史查詢</div></div>
+            <div class="mobile-nav-card" data-mode="search"><div class="mobile-nav-icon">🔍</div><div class="mobile-nav-label">股票搜尋</div></div>
         </div>
 
         <div id="dashboardMode" class="content-section">
@@ -1153,9 +1101,7 @@
         </div>
 
         <div id="changesMode" class="content-section hidden">
-            <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 22px; color: var(--text);">
-                📊 <span id="changesDateTitle"></span>
-            </h3>
+            <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 22px; color: var(--text);">📊 <span id="changesDateTitle"></span></h3>
             <div class="etf-tabs" id="etfTabs">
                 <button class="etf-tab active" data-etf="00981A">00981A 統一台股增長</button>
                 <button class="etf-tab" data-etf="00980A">00980A 野村智慧優選</button>
@@ -1196,54 +1142,6 @@
     </div>
 
     <script>
-        // Debug 工具
-        let debugLogs = [];
-
-        function debugLog(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString();
-            const log = `[${timestamp}] ${message}`;
-            debugLogs.push({ log, type });
-
-            const logElement = document.getElementById('debugLog');
-            if (logElement) {
-                const span = document.createElement('span');
-                span.className = type;
-                span.textContent = log + '\n';
-                logElement.appendChild(span);
-                logElement.scrollTop = logElement.scrollHeight;
-            }
-
-            console.log(log);
-        }
-
-        function toggleDebug() {
-            const panel = document.getElementById('debugPanel');
-            panel.classList.toggle('show');
-        }
-
-        // 覆蓋原生 console
-        const originalConsole = {
-            log: console.log,
-            error: console.error,
-            warn: console.warn
-        };
-
-        console.log = function(...args) {
-            debugLog(args.join(' '), 'info');
-            originalConsole.log.apply(console, args);
-        };
-
-        console.error = function(...args) {
-            debugLog(args.join(' '), 'error');
-            originalConsole.error.apply(console, args);
-        };
-
-        console.warn = function(...args) {
-            debugLog(args.join(' '), 'warning');
-            originalConsole.warn.apply(console, args);
-        };
-
-        // 主程式
         let stockData = {};
         let processedData = {};
         let allDates = [];
@@ -1254,11 +1152,28 @@
         let chartInstances = new Map();
         let latestDataDate = null;
 
+        // Debug 工具（修正無限遞迴問題）
+        function debugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('zh-TW', { hour12: false });
+            const logElement = document.getElementById('debugLog');
+            if (logElement) {
+                const line = document.createElement('div');
+                line.className = type;
+                line.textContent = `[${timestamp}] ${message}`;
+                logElement.appendChild(line);
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+        }
+
+        function toggleDebug() {
+            const panel = document.getElementById('debugPanel');
+            panel.classList.toggle('show');
+        }
+
         function getETFHoldings(stock) {
             return stock.etfholdings || stock.etf_holdings || {};
         }
 
-        // 資料載入
         document.addEventListener('DOMContentLoaded', () => {
             debugLog('🚀 開始初始化...', 'success');
             debugLog(`Chart.js: ${typeof Chart}`, 'info');
@@ -1266,20 +1181,19 @@
 
             Promise.all([
                 fetch('./processed_etf_data.json').then(r => {
-                    debugLog(`📄 processed_etf_data.json 狀態: ${r.status}`, r.ok ? 'success' : 'error');
-                    if (!r.ok) throw new Error(`載入 processed_etf_data.json 失敗 (HTTP ${r.status})`);
+                    debugLog(`📄 processed_etf_data.json: HTTP ${r.status}`, r.ok ? 'success' : 'error');
+                    if (!r.ok) throw new Error(`載入 processed_etf_data.json 失敗 (${r.status})`);
                     return r.json();
                 }),
                 fetch('./stock_history_data.json').then(r => {
-                    debugLog(`📄 stock_history_data.json 狀態: ${r.status}`, r.ok ? 'success' : 'error');
-                    if (!r.ok) throw new Error(`載入 stock_history_data.json 失敗 (HTTP ${r.status})`);
+                    debugLog(`📄 stock_history_data.json: HTTP ${r.status}`, r.ok ? 'success' : 'error');
+                    if (!r.ok) throw new Error(`載入 stock_history_data.json 失敗 (${r.status})`);
                     return r.json();
                 })
             ])
                 .then(([processed, stock]) => {
                     debugLog('✅ 資料載入成功', 'success');
-                    debugLog(`股票數量: ${Object.keys(stock).length}`, 'info');
-                    debugLog(`ETF 數量: ${Object.keys(processed).length}`, 'info');
+                    debugLog(`📊 股票數量: ${Object.keys(stock).length}`, 'info');
 
                     processedData = processed;
                     stockData = stock;
@@ -1298,11 +1212,10 @@
                         }
                     }
                     allDates = Array.from(dateSet).sort().reverse();
-                    debugLog(`日期數量: ${allDates.length}`, 'info');
 
                     if (allDates.length > 0) {
                         latestDataDate = new Date(allDates[0].replace(/\//g, '-'));
-                        debugLog(`📅 最新日期: ${allDates[0]}`, 'success');
+                        debugLog(`📅 最新資料日期: ${allDates[0]}`, 'success');
                     }
 
                     let first = processedData[Object.keys(processedData)[0]];
@@ -1320,32 +1233,22 @@
                         for (const [code, info] of Object.entries(stockData)) {
                             if (code.toLowerCase().includes(keyword) || 
                                 (info.name && info.name.toLowerCase().includes(keyword))) {
-                                results.push({ 
-                                    code, 
-                                    name: info.name, 
-                                    holdings: getETFHoldings(info)
-                                });
+                                results.push({ code, name: info.name, holdings: getETFHoldings(info) });
                             }
                         }
                         renderSearchResults(results);
                     });
 
                     document.getElementById('loadingOverlay').remove();
-                    debugLog('🎉 初始化完成！', 'success');
+                    debugLog('🎉 初始化完成', 'success');
                 })
                 .catch(error => {
-                    console.error('❌ 載入失敗: ' + error.message);
+                    debugLog(`❌ 載入失敗: ${error.message}`, 'error');
                     document.getElementById('loadingOverlay').innerHTML = `
                         <div style="text-align: center; color: white; max-width: 600px; padding: 20px;">
                             <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
                             <h2 style="margin-bottom: 12px;">載入失敗</h2>
-                            <p style="margin-bottom: 20px;">${error.message}</p>
-                            <p style="font-size: 14px; margin-bottom: 20px;">
-                                請確認：<br>
-                                1. processed_etf_data.json 和 stock_history_data.json 是否已上傳<br>
-                                2. 檔案是否在同一目錄<br>
-                                3. GitHub Pages 是否已啟用
-                            </p>
+                            <p style="margin-bottom: 20px; font-size: 14px;">${error.message}</p>
                             <button class="btn" onclick="location.reload()">重新載入</button>
                             <button class="btn" onclick="toggleDebug()" style="margin-left: 10px; background: #F59E0B;">查看除錯</button>
                         </div>
@@ -1353,51 +1256,31 @@
                 });
         });
 
-        // Tab 切換
         document.querySelectorAll('.main-tab, .mobile-nav-card').forEach(tab => {
             tab.addEventListener('click', () => {
-                document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.mobile-nav-card').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('.main-tab, .mobile-nav-card').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 const mode = tab.dataset.mode;
-                const otherNav = tab.classList.contains('main-tab') 
-                    ? document.querySelector(`.mobile-nav-card[data-mode="${mode}"]`)
-                    : document.querySelector(`.main-tab[data-mode="${mode}"]`);
-                if (otherNav) otherNav.classList.add('active');
                 document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
                 currentMode = mode;
-                const modes = {
-                    'dashboard': 'dashboardMode',
-                    'changes': 'changesMode',
-                    'history': 'historyMode',
-                    'search': 'searchMode'
-                };
+                const modes = { 'dashboard': 'dashboardMode', 'changes': 'changesMode', 'history': 'historyMode', 'search': 'searchMode' };
                 document.getElementById(modes[currentMode]).classList.remove('hidden');
             });
         });
 
-        // 週曆功能
         function getWeekRange(offset = 0) {
             if (!latestDataDate) return { start: new Date(), end: new Date(), dates: [] };
             const baseDate = new Date(latestDataDate);
             const dow = baseDate.getDay();
             const baseFriday = new Date(baseDate);
-            if (dow === 6) {
-                baseFriday.setDate(baseFriday.getDate() - 1);
-            } else if (dow === 0) {
-                baseFriday.setDate(baseFriday.getDate() - 2);
-            } else {
-                baseFriday.setDate(baseFriday.getDate() + (5 - dow));
-            }
+            if (dow === 6) baseFriday.setDate(baseFriday.getDate() - 1);
+            else if (dow === 0) baseFriday.setDate(baseFriday.getDate() - 2);
+            else baseFriday.setDate(baseFriday.getDate() + (5 - dow));
             const targetFriday = new Date(baseFriday);
             targetFriday.setDate(baseFriday.getDate() + (offset * 7));
             const startFriday = new Date(targetFriday);
             startFriday.setDate(targetFriday.getDate() - 7);
-            return { 
-                start: startFriday, 
-                end: targetFriday, 
-                dates: getDatesInRange(startFriday, targetFriday) 
-            };
+            return { start: startFriday, end: targetFriday, dates: getDatesInRange(startFriday, targetFriday) };
         }
 
         function getDatesInRange(start, end) {
@@ -1406,9 +1289,7 @@
             current.setDate(current.getDate() + 1);
             while (current <= end) {
                 const day = current.getDay();
-                if (day !== 0 && day !== 6) {
-                    dates.push(new Date(current));
-                }
+                if (day !== 0 && day !== 6) dates.push(new Date(current));
                 current.setDate(current.getDate() + 1);
             }
             return dates;
@@ -1416,15 +1297,11 @@
 
         function formatDate(date) {
             if (!date) return '';
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}/${month}/${day}`;
+            return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
         }
 
         function getDayName(date) {
-            const days = ['日', '一', '二', '三', '四', '五', '六'];
-            return days[date.getDay()];
+            return ['日', '一', '二', '三', '四', '五', '六'][date.getDay()];
         }
 
         function changeWeek(offset) {
@@ -1439,32 +1316,30 @@
 
         function renderCalendar() {
             const weekRange = getWeekRange(currentWeekOffset);
-            document.getElementById('weekRange').textContent = 
-                `${formatDate(weekRange.start)} ~ ${formatDate(weekRange.end)}`;
+            document.getElementById('weekRange').textContent = `${formatDate(weekRange.start)} ~ ${formatDate(weekRange.end)}`;
             const isLatestWeek = (currentWeekOffset === 0);
             document.getElementById('nextWeekBtn').disabled = isLatestWeek;
-            document.getElementById('prevWeekBtn').disabled = false;
-            const latestBtn = document.getElementById('latestBtn');
-            if (isLatestWeek) {
-                latestBtn.style.display = 'none';
-            } else {
-                latestBtn.style.display = 'block';
-            }
+            document.getElementById('latestBtn').style.display = isLatestWeek ? 'none' : 'block';
+
             if (weekRange.dates.length === 0) {
                 document.getElementById('calendarContainer').innerHTML = '<p class="no-data">本週無交易日</p>';
                 document.getElementById('mobileCalendar').innerHTML = '<p class="no-data">本週無交易日</p>';
                 return;
             }
+
             let tableHTML = '<table class="calendar-table"><thead><tr>';
             weekRange.dates.forEach(date => {
                 tableHTML += `<th>${getDayName(date)}<br><span style="font-size:14px;opacity:0.9;">${date.getMonth()+1}/${date.getDate()}</span></th>`;
             });
             tableHTML += '</tr></thead><tbody><tr>';
+
             weekRange.dates.forEach(date => {
                 const dateStr = formatDate(date);
                 const isToday = latestDataDate && dateStr === formatDate(latestDataDate);
                 const dayChanges = getChangesForDate(dateStr, dashboardETF);
+
                 tableHTML += `<td${isToday ? ' class="today-marker"' : ''}>`;
+
                 if (dayChanges.new.length > 0) {
                     tableHTML += `<div class="change-section"><div class="change-section-title new">✨ 新增 ${dayChanges.new.length}</div><div class="stock-mini-list">`;
                     dayChanges.new.slice(0, 5).forEach(stock => {
@@ -1474,11 +1349,10 @@
                             <span class="stock-count">${stock.count}張</span>
                         </div>`;
                     });
-                    if (dayChanges.new.length > 5) {
-                        tableHTML += `<div style="text-align:center;color:var(--text-light);font-size:13px;margin-top:8px;">還有 ${dayChanges.new.length - 5} 檔...</div>`;
-                    }
+                    if (dayChanges.new.length > 5) tableHTML += `<div style="text-align:center;color:var(--text-light);font-size:13px;margin-top:8px;">還有 ${dayChanges.new.length - 5} 檔...</div>`;
                     tableHTML += `</div></div>`;
                 }
+
                 if (dayChanges.deleted.length > 0) {
                     tableHTML += `<div class="change-section"><div class="change-section-title delete">🗑️ 刪除 ${dayChanges.deleted.length}</div><div class="stock-mini-list">`;
                     dayChanges.deleted.slice(0, 5).forEach(stock => {
@@ -1487,63 +1361,64 @@
                             <span class="stock-name">${stock.name}</span>
                         </div>`;
                     });
-                    if (dayChanges.deleted.length > 5) {
-                        tableHTML += `<div style="text-align:center;color:var(--text-light);font-size:13px;margin-top:8px;">還有 ${dayChanges.deleted.length - 5} 檔...</div>`;
-                    }
+                    if (dayChanges.deleted.length > 5) tableHTML += `<div style="text-align:center;color:var(--text-light);font-size:13px;margin-top:8px;">還有 ${dayChanges.deleted.length - 5} 檔...</div>`;
                     tableHTML += `</div></div>`;
                 }
+
                 if (dayChanges.new.length === 0 && dayChanges.deleted.length === 0) {
                     tableHTML += `<div class="no-data" style="padding: 20px;">無變動</div>`;
                 }
+
                 tableHTML += '</td>';
             });
+
             tableHTML += '</tr></tbody></table>';
             document.getElementById('calendarContainer').innerHTML = tableHTML;
+
             let mobileHTML = '';
             weekRange.dates.forEach(date => {
                 const dateStr = formatDate(date);
                 const isToday = latestDataDate && dateStr === formatDate(latestDataDate);
                 const dayChanges = getChangesForDate(dateStr, dashboardETF);
+
                 mobileHTML += `<div class="mobile-day-card${isToday ? ' today-marker' : ''}">
                     <div class="mobile-day-header">
-                        <div>
-                            <div class="mobile-day-title">${getDayName(date)}</div>
-                            <div class="mobile-day-date">${date.getMonth()+1}/${date.getDate()}</div>
-                        </div>
+                        <div><div class="mobile-day-title">${getDayName(date)}</div><div class="mobile-day-date">${date.getMonth()+1}/${date.getDate()}</div></div>
                         ${isToday ? '<div class="mobile-today-badge">今日</div>' : ''}
                     </div>`;
+
                 if (dayChanges.new.length > 0) {
                     mobileHTML += `<div class="change-section"><div class="change-section-title new">✨ 新增 ${dayChanges.new.length}</div><div class="stock-mini-list">`;
                     dayChanges.new.forEach(stock => {
                         mobileHTML += `<div class="stock-mini-item new" onclick="showStockDetail('${stock.code}', '${dashboardETF}')">
-                            <span class="stock-code">${stock.code}</span>
-                            <span class="stock-name">${stock.name}</span>
-                            <span class="stock-count">${stock.count}張</span>
+                            <span class="stock-code">${stock.code}</span><span class="stock-name">${stock.name}</span><span class="stock-count">${stock.count}張</span>
                         </div>`;
                     });
                     mobileHTML += `</div></div>`;
                 }
+
                 if (dayChanges.deleted.length > 0) {
                     mobileHTML += `<div class="change-section"${dayChanges.new.length > 0 ? ' style="margin-top: 14px;"' : ''}><div class="change-section-title delete">🗑️ 刪除 ${dayChanges.deleted.length}</div><div class="stock-mini-list">`;
                     dayChanges.deleted.forEach(stock => {
                         mobileHTML += `<div class="stock-mini-item delete" onclick="showStockDetail('${stock.code}', '${dashboardETF}')">
-                            <span class="stock-code">${stock.code}</span>
-                            <span class="stock-name">${stock.name}</span>
+                            <span class="stock-code">${stock.code}</span><span class="stock-name">${stock.name}</span>
                         </div>`;
                     });
                     mobileHTML += `</div></div>`;
                 }
+
                 if (dayChanges.new.length === 0 && dayChanges.deleted.length === 0) {
                     mobileHTML += `<div class="no-data" style="padding: 22px;">無變動</div>`;
                 }
+
                 mobileHTML += '</div>';
             });
+
             document.getElementById('mobileCalendar').innerHTML = mobileHTML;
         }
 
         function getChangesForDate(dateStr, etf) {
-            const newStocks = [];
-            const deletedStocks = [];
+            const newStocks = [], deletedStocks = [];
             for (const [stockCode, stockInfo] of Object.entries(stockData)) {
                 const holdings = getETFHoldings(stockInfo);
                 const etfInfo = holdings?.[etf];
@@ -1551,32 +1426,21 @@
                 const record = etfInfo.history.find(r => r.date === dateStr);
                 if (!record) continue;
                 if (record.status === '首次出現') {
-                    newStocks.push({
-                        code: stockCode,
-                        name: stockInfo.name,
-                        count: record.count,
-                        date: dateStr
-                    });
+                    newStocks.push({ code: stockCode, name: stockInfo.name, count: record.count, date: dateStr });
                 } else if (record.status === '出清') {
-                    deletedStocks.push({
-                        code: stockCode,
-                        name: stockInfo.name,
-                        date: dateStr
-                    });
+                    deletedStocks.push({ code: stockCode, name: stockInfo.name, date: dateStr });
                 }
             }
             return { new: newStocks, deleted: deletedStocks };
         }
 
-        // 今日變動
         function renderChanges() {
             const data = processedData[currentETF];
             if (!data || !data.daily_changes || data.daily_changes.length === 0) {
                 document.getElementById('changesGrid').innerHTML = '<p class="no-data">無異動資料</p>';
                 return;
             }
-            const actualDate = data.latest_date;
-            document.getElementById('changesDateTitle').textContent = actualDate;
+            document.getElementById('changesDateTitle').textContent = data.latest_date;
             const grid = document.getElementById('changesGrid');
             grid.innerHTML = data.daily_changes.map(change => {
                 const typeClass = change.type === '新增' ? 'new-add' : change.type === '刪除' ? 'delete' : '';
@@ -1584,40 +1448,20 @@
                 return `
                     <div class="change-card ${typeClass}" onclick="showStockDetail('${change.code}', '${currentETF}')">
                         <div class="change-card-header">
-                            <div>
-                                <div class="change-code">${change.code}</div>
-                                <div class="change-name">${change.name}</div>
-                            </div>
+                            <div><div class="change-code">${change.code}</div><div class="change-name">${change.name}</div></div>
                             <span class="badge ${badgeClass}">${change.type}</span>
                         </div>
                         <div class="change-stats">
-                            <div class="stat-item">
-                                <div class="stat-label">現持股</div>
-                                <div class="stat-value">${change.current_count || 0}張</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">權重</div>
-                                <div class="stat-value">${change.current_weight || 0}%</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">張數變動</div>
-                                <div class="stat-value ${change.count_change > 0 ? 'positive' : 'negative'}">
-                                    ${change.count_change > 0 ? '+' : ''}${change.count_change || 0}張
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">權重變動</div>
-                                <div class="stat-value ${change.weight_change > 0 ? 'positive' : 'negative'}">
-                                    ${change.weight_change > 0 ? '+' : ''}${change.weight_change || 0}%
-                                </div>
-                            </div>
+                            <div class="stat-item"><div class="stat-label">現持股</div><div class="stat-value">${change.current_count || 0}張</div></div>
+                            <div class="stat-item"><div class="stat-label">權重</div><div class="stat-value">${change.current_weight || 0}%</div></div>
+                            <div class="stat-item"><div class="stat-label">張數變動</div><div class="stat-value ${change.count_change > 0 ? 'positive' : 'negative'}">${change.count_change > 0 ? '+' : ''}${change.count_change || 0}張</div></div>
+                            <div class="stat-item"><div class="stat-label">權重變動</div><div class="stat-value ${change.weight_change > 0 ? 'positive' : 'negative'}">${change.weight_change > 0 ? '+' : ''}${change.weight_change || 0}%</div></div>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // 歷史查詢
         function loadHistoryData() {
             const selectedDate = document.getElementById('historyDate').value;
             const selectedETF = document.getElementById('historyETF').value;
@@ -1637,30 +1481,14 @@
                 if (!etfInfo || !etfInfo.history) continue;
                 const record = etfInfo.history.find(r => r.date === formattedDate);
                 if (record && record.status !== '持平' && record.count_change !== 0) {
-                    changes.push({
-                        code: stockCode,
-                        name: stockInfo.name,
-                        ...record
-                    });
+                    changes.push({ code: stockCode, name: stockInfo.name, ...record });
                 }
             }
             document.getElementById('historySummary').innerHTML = `
-                <div class="summary-card">
-                    <div class="label">總變動</div>
-                    <div class="value">${changes.length}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">新增</div>
-                    <div class="value success">${changes.filter(c => c.status === '首次出現').length}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">增持</div>
-                    <div class="value">${changes.filter(c => c.status === '增持').length}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="label">減持</div>
-                    <div class="value">${changes.filter(c => c.status === '減持').length}</div>
-                </div>
+                <div class="summary-card"><div class="label">總變動</div><div class="value">${changes.length}</div></div>
+                <div class="summary-card"><div class="label">新增</div><div class="value success">${changes.filter(c => c.status === '首次出現').length}</div></div>
+                <div class="summary-card"><div class="label">增持</div><div class="value">${changes.filter(c => c.status === '增持').length}</div></div>
+                <div class="summary-card"><div class="label">減持</div><div class="value">${changes.filter(c => c.status === '減持').length}</div></div>
             `;
             const grid = document.getElementById('historyGrid');
             if (changes.length === 0) {
@@ -1673,40 +1501,20 @@
                 return `
                     <div class="change-card ${typeClass}" onclick="showStockDetail('${change.code}', '${selectedETF}')">
                         <div class="change-card-header">
-                            <div>
-                                <div class="change-code">${change.code}</div>
-                                <div class="change-name">${change.name}</div>
-                            </div>
+                            <div><div class="change-code">${change.code}</div><div class="change-name">${change.name}</div></div>
                             <span class="badge ${badgeClass}">${change.status}</span>
                         </div>
                         <div class="change-stats">
-                            <div class="stat-item">
-                                <div class="stat-label">張數</div>
-                                <div class="stat-value">${change.count}張</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">權重</div>
-                                <div class="stat-value">${change.weight}%</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">張數變動</div>
-                                <div class="stat-value ${change.count_change > 0 ? 'positive' : 'negative'}">
-                                    ${change.count_change > 0 ? '+' : ''}${change.count_change}張
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">權重變動</div>
-                                <div class="stat-value ${change.weight_change > 0 ? 'positive' : 'negative'}">
-                                    ${change.weight_change > 0 ? '+' : ''}${change.weight_change}%
-                                </div>
-                            </div>
+                            <div class="stat-item"><div class="stat-label">張數</div><div class="stat-value">${change.count}張</div></div>
+                            <div class="stat-item"><div class="stat-label">權重</div><div class="stat-value">${change.weight}%</div></div>
+                            <div class="stat-item"><div class="stat-label">張數變動</div><div class="stat-value ${change.count_change > 0 ? 'positive' : 'negative'}">${change.count_change > 0 ? '+' : ''}${change.count_change}張</div></div>
+                            <div class="stat-item"><div class="stat-label">權重變動</div><div class="stat-value ${change.weight_change > 0 ? 'positive' : 'negative'}">${change.weight_change > 0 ? '+' : ''}${change.weight_change}%</div></div>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // 搜尋功能
         function renderSearchResults(results) {
             const grid = document.getElementById('searchResults');
             if (results.length === 0) {
@@ -1715,57 +1523,41 @@
             }
             grid.innerHTML = results.map(stock => {
                 const etfCount = Object.keys(stock.holdings || {}).length;
-                const totalCount = Object.values(stock.holdings || {})
-                    .reduce((sum, h) => sum + (h.current_count || 0), 0);
+                const totalCount = Object.values(stock.holdings || {}).reduce((sum, h) => sum + (h.current_count || 0), 0);
                 const firstETF = Object.keys(stock.holdings || {})[0];
                 return `
                     <div class="change-card" onclick="showStockDetail('${stock.code}', '${firstETF}')">
                         <div class="change-card-header">
-                            <div>
-                                <div class="change-code">${stock.code}</div>
-                                <div class="change-name">${stock.name}</div>
-                            </div>
+                            <div><div class="change-code">${stock.code}</div><div class="change-name">${stock.name}</div></div>
                         </div>
                         <div class="change-stats">
-                            <div class="stat-item">
-                                <div class="stat-label">持有 ETF</div>
-                                <div class="stat-value">${etfCount}</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">總持股</div>
-                                <div class="stat-value">${totalCount}張</div>
-                            </div>
+                            <div class="stat-item"><div class="stat-label">持有 ETF</div><div class="stat-value">${etfCount}</div></div>
+                            <div class="stat-item"><div class="stat-label">總持股</div><div class="stat-value">${totalCount}張</div></div>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Chart.js 趨勢圖
         function drawTrendChart(canvasId, history) {
             if (!history || history.length === 0) return;
-            if (chartInstances.has(canvasId)) {
-                chartInstances.get(canvasId).destroy();
-            }
+            if (chartInstances.has(canvasId)) chartInstances.get(canvasId).destroy();
             const sortedHistory = [...history].sort((a, b) => a.date.localeCompare(b.date));
-            const labels = sortedHistory.map(h => h.date);
-            const counts = sortedHistory.map(h => h.count);
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const newChart = new Chart(ctx, {
+            const newChart = new Chart(canvas.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: sortedHistory.map(h => h.date),
                     datasets: [{
                         label: '持股張數',
-                        data: counts,
+                        data: sortedHistory.map(h => h.count),
                         borderColor: '#4F46E5',
                         backgroundColor: 'rgba(79, 70, 229, 0.1)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
-                        pointRadius: counts.length > 50 ? 0 : 4,
+                        pointRadius: sortedHistory.length > 50 ? 0 : 4,
                         pointBackgroundColor: '#4F46E5',
                         pointBorderColor: 'white',
                         pointBorderWidth: 2,
@@ -1777,36 +1569,22 @@
                     maintainAspectRatio: true,
                     plugins: {
                         legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            padding: 12,
-                            titleFont: { size: 14, weight: 'bold' },
-                            bodyFont: { size: 13 },
-                            cornerRadius: 8
-                        }
+                        tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 12, cornerRadius: 8 }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: false,
-                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                            ticks: { font: { size: 12, weight: 600 } }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { font: { size: 11, weight: 600 } }
-                        }
+                        y: { beginAtZero: false, grid: { color: 'rgba(0, 0, 0, 0.05)' } },
+                        x: { grid: { display: false } }
                     }
                 }
             });
             chartInstances.set(canvasId, newChart);
         }
 
-        // K 線圖 (簡化版 - 顯示狀態訊息)
         async function drawKlineChartFromAPI(stockCode, etfCode, etfHistory) {
-            const containerId = `kline-${stockCode}-${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
+            const containerId = `kline${stockCode}${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
             const container = document.getElementById(containerId);
 
-            debugLog(`🎨 準備繪製 K 線圖: ${stockCode}`, 'info');
+            debugLog(`🎨 準備繪製 K 線: ${stockCode}`, 'info');
 
             if (!container) {
                 debugLog(`❌ 找不到容器: ${containerId}`, 'error');
@@ -1815,89 +1593,96 @@
 
             if (typeof LightweightCharts === 'undefined') {
                 debugLog('❌ LightweightCharts 未載入', 'error');
-                container.innerHTML = `
-                    <div class="kline-status">
-                        ⚠️ 圖表庫載入失敗<br>
-                        Lightweight Charts 未成功載入，可能是網路問題或 CDN 被封鎖
-                    </div>
-                `;
+                container.innerHTML = '<div style="padding:80px 20px;text-align:center;color:#EF4444;background:#FEE;border-radius:12px;">❌ 圖表庫未載入</div>';
                 return;
             }
 
-            container.innerHTML = `
-                <div class="kline-status">
-                    ⏳ 載入股價資料中...<br>
-                    股票代碼: ${stockCode}
-                </div>
-            `;
+            container.innerHTML = '<div style="padding:80px 20px;text-align:center;color:#64748B;">⏳ 載入股價中...</div>';
 
             try {
-                debugLog(`📡 開始抓取 ${stockCode} 股價`, 'info');
-
+                debugLog(`📡 抓取 ${stockCode} 股價`, 'info');
                 const symbol = `${stockCode}.TW`;
                 const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=6mo&interval=1d`;
-                const response = await fetch(url);
+                let response = await fetch(url);
 
                 if (!response.ok) {
                     debugLog(`⚠️ .TW 失敗，嘗試 .TWO`, 'warning');
-                    const twoUrl = url.replace('.TW', '.TWO');
-                    const twoResponse = await fetch(twoUrl);
-                    if (!twoResponse.ok) {
-                        throw new Error('API 請求失敗');
-                    }
+                    response = await fetch(url.replace('.TW', '.TWO'));
+                    if (!response.ok) throw new Error('API 請求失敗');
                 }
 
-                debugLog(`✅ ${stockCode} API 成功`, 'success');
+                const data = await response.json();
+                const result = data.chart.result[0];
+                const timestamps = result.timestamp;
+                const quotes = result.indicators.quote[0];
 
-                container.innerHTML = `
-                    <div class="kline-status">
-                        ✅ 股價資料載入成功<br>
-                        繪製 K 線圖中...
-                    </div>
-                `;
+                const klines = timestamps.map((ts, i) => ({
+                    time: new Date(ts * 1000).toISOString().split('T')[0],
+                    open: quotes.open[i] || 0,
+                    high: quotes.high[i] || 0,
+                    low: quotes.low[i] || 0,
+                    close: quotes.close[i] || 0,
+                })).filter(k => k.close > 0);
 
-                // 實際繪製 K 線圖的程式碼在這裡
-                // (為了簡化，暫時只顯示狀態)
+                debugLog(`✅ ${stockCode} 取得 ${klines.length} 筆`, 'success');
 
-                setTimeout(() => {
-                    container.innerHTML = `
-                        <div class="kline-status">
-                            📊 K 線圖已就緒<br>
-                            股票: ${stockCode} | ETF: ${etfCode}
-                        </div>
-                    `;
-                    debugLog(`🎉 ${stockCode} K 線圖完成`, 'success');
-                }, 1000);
+                container.innerHTML = '';
+                const chart = LightweightCharts.createChart(container, {
+                    width: container.offsetWidth,
+                    height: 400,
+                    layout: { backgroundColor: '#FFFFFF', textColor: '#1E293B' },
+                    grid: { vertLines: { color: '#F0F0F0' }, horzLines: { color: '#F0F0F0' } },
+                    timeScale: { borderColor: '#E2E8F0', timeVisible: true },
+                    rightPriceScale: { borderColor: '#E2E8F0' }
+                });
 
+                const candlestickSeries = chart.addCandlestickSeries({
+                    upColor: '#EF4444',
+                    downColor: '#10B981',
+                    borderUpColor: '#EF4444',
+                    borderDownColor: '#10B981',
+                    wickUpColor: '#EF4444',
+                    wickDownColor: '#10B981'
+                });
+
+                candlestickSeries.setData(klines);
+
+                const markers = etfHistory
+                    .filter(r => ['首次出現', '增持', '減持', '出清'].includes(r.status))
+                    .map(r => ({
+                        time: r.date.replace(/\//g, '-'),
+                        position: (r.status === '減持' || r.status === '出清') ? 'aboveBar' : 'belowBar',
+                        color: (r.status === '減持' || r.status === '出清') ? '#EF4444' : '#10B981',
+                        shape: (r.status === '減持' || r.status === '出清') ? 'arrowDown' : 'arrowUp',
+                        text: `${r.status} ${r.count}張`
+                    }));
+
+                candlestickSeries.setMarkers(markers);
+
+                new ResizeObserver(() => chart.applyOptions({ width: container.offsetWidth })).observe(container);
+
+                debugLog(`🎉 ${stockCode} K 線完成`, 'success');
             } catch (error) {
-                debugLog(`❌ ${stockCode} K 線圖失敗: ${error.message}`, 'error');
-                container.innerHTML = `
-                    <div class="kline-status">
-                        ❌ 無法載入股價資料<br>
-                        錯誤: ${error.message}<br><br>
-                        可能原因：<br>
-                        • Yahoo Finance API 限流<br>
-                        • 網路連線問題<br>
-                        • 股票代碼不存在
-                    </div>
-                `;
+                debugLog(`❌ ${stockCode} 失敗: ${error.message}`, 'error');
+                container.innerHTML = `<div style="padding:60px 20px;text-align:center;color:#856404;background:#FFF3CD;border:2px solid #FFC107;border-radius:12px;">
+                    ❌ 無法載入股價<br><span style="font-size:13px;">${error.message}</span>
+                </div>`;
             }
         }
 
-        // 股票詳情 Modal
         function showStockDetail(stockCode, preferredETF = null) {
-            debugLog(`🔍 顯示股票: ${stockCode}`, 'info');
+            debugLog(`🔍 顯示: ${stockCode}`, 'info');
 
             const stock = stockData[stockCode];
             if (!stock) {
-                debugLog(`❌ 找不到股票: ${stockCode}`, 'error');
-                alert(`找不到股票資料: ${stockCode}`);
+                debugLog(`❌ 找不到: ${stockCode}`, 'error');
+                alert(`找不到股票: ${stockCode}`);
                 return;
             }
 
             const holdings = getETFHoldings(stock);
             if (!holdings || Object.keys(holdings).length === 0) {
-                alert(`該股票目前無 ETF 持有\n${stock.name} (${stockCode})`);
+                alert(`${stock.name} (${stockCode}) 目前無 ETF 持有`);
                 return;
             }
 
@@ -1911,85 +1696,46 @@
 
             const etfContents = etfList.map(etf => {
                 const data = holdings[etf];
-                const canvasId = `chart-${stockCode}-${etf}`.replace(/[^a-zA-Z0-9]/g, '');
+                const canvasId = `chart${stockCode}${etf}`.replace(/[^a-zA-Z0-9]/g, '');
+                const klineId = `kline${stockCode}${etf}`.replace(/[^a-zA-Z0-9]/g, '');
 
                 return `
                     <div class="etf-content ${etf === firstETF ? 'active' : ''}" data-etf="${etf}">
                         <div class="modal-stats">
-                            <div class="modal-stat-card">
-                                <div class="label">現持股</div>
-                                <div class="value primary">${(data.current_count || 0)}張</div>
-                            </div>
-                            <div class="modal-stat-card">
-                                <div class="label">權重</div>
-                                <div class="value">${data.current_weight || 0}%</div>
-                            </div>
-                            <div class="modal-stat-card">
-                                <div class="label">歷史最高</div>
-                                <div class="value success">${(data.max_count || 0)}張</div>
-                                <div class="sub">${data.max_count_date || ''}</div>
-                            </div>
-                            <div class="modal-stat-card">
-                                <div class="label">歷史最低</div>
-                                <div class="value danger">${(data.min_count || 0)}張</div>
-                                <div class="sub">${data.min_count_date || ''}</div>
-                            </div>
+                            <div class="modal-stat-card"><div class="label">現持股</div><div class="value primary">${data.current_count || 0}張</div></div>
+                            <div class="modal-stat-card"><div class="label">權重</div><div class="value">${data.current_weight || 0}%</div></div>
+                            <div class="modal-stat-card"><div class="label">歷史最高</div><div class="value success">${data.max_count || 0}張</div><div class="sub">${data.max_count_date || ''}</div></div>
+                            <div class="modal-stat-card"><div class="label">歷史最低</div><div class="value danger">${data.min_count || 0}張</div><div class="sub">${data.min_count_date || ''}</div></div>
                         </div>
 
                         <div class="chart-container">
                             <h3>📈 持股變化趨勢</h3>
-                            <canvas id="${canvasId}" style="width:100%; height:auto; max-height:300px;"></canvas>
+                            <canvas id="${canvasId}" style="width:100%;height:auto;max-height:300px;"></canvas>
                         </div>
 
-                        <div class="chart-container" style="margin-top: 20px;">
+                        <div class="chart-container">
                             <h3>📊 股價走勢與 ETF 買賣點</h3>
-                            <div id="kline-${canvasId}" style="width:100%; height:400px; background: white; border-radius: 8px;"></div>
-                            <div style="margin-top: 10px; font-size: 13px; color: #64748B;">
-                                <span style="color: #10B981;">▲ 綠色箭頭</span>：ETF 買進/增持  
-                                <span style="color: #EF4444; margin-left: 20px;">▼ 紅色箭頭</span>：ETF 賣出/減持
+                            <div id="${klineId}" style="width:100%;height:400px;"></div>
+                            <div style="margin-top:10px;font-size:13px;color:#64748B;">
+                                <span style="color:#10B981;">▲ 綠色箭頭</span>：ETF 買進/增持
+                                <span style="color:#EF4444;margin-left:20px;">▼ 紅色箭頭</span>：ETF 賣出/減持
                             </div>
                         </div>
 
                         <div class="modal-table">
                             <table>
-                                <thead>
-                                    <tr>
-                                        <th>日期</th>
-                                        <th>張數</th>
-                                        <th>權重</th>
-                                        <th>張數變動</th>
-                                        <th>權重變動</th>
-                                        <th>狀態</th>
-                                    </tr>
-                                </thead>
+                                <thead><tr><th>日期</th><th>張數</th><th>權重</th><th>張數變動</th><th>權重變動</th><th>狀態</th></tr></thead>
                                 <tbody>
-                                    ${(data.history || [])
-                                        .slice()
-                                        .reverse()
-                                        .map(r => `
-                                            <tr>
-                                                <td style="font-weight: 700;">${r.date}</td>
-                                                <td style="font-weight: 800;">${r.count}張</td>
-                                                <td>${r.weight}%</td>
-                                                <td style="color: ${r.count_change > 0 ? 'var(--success)' : 'var(--danger)'}; font-weight: 800;">
-                                                    ${r.count_change > 0 ? '+' : ''}${r.count_change}張
-                                                </td>
-                                                <td style="color: ${r.weight_change > 0 ? 'var(--success)' : 'var(--danger)'}; font-weight: 700;">
-                                                    ${r.weight_change > 0 ? '+' : ''}${r.weight_change}%
-                                                </td>
-                                                <td>
-                                                    <span style="padding: 4px 6px; border-radius: 8px; font-size: 10px; font-weight: 700; background: ${
-                                                        r.status === '首次出現' ? 'rgba(16, 185, 129, 0.15)' : 
-                                                        r.status === '出清' ? 'rgba(239, 68, 68, 0.15)' : 
-                                                        'var(--bg-light)'
-                                                    }; color: ${
-                                                        r.status === '首次出現' ? 'var(--success)' : 
-                                                        r.status === '出清' ? 'var(--danger)' : 
-                                                        'var(--text-light)'
-                                                    };">${r.status}</span>
-                                                </td>
-                                            </tr>
-                                        `).join('')}
+                                    ${(data.history || []).slice().reverse().map(r => `
+                                        <tr>
+                                            <td style="font-weight:700;">${r.date}</td>
+                                            <td style="font-weight:800;">${r.count}張</td>
+                                            <td>${r.weight}%</td>
+                                            <td style="color:${r.count_change > 0 ? 'var(--success)' : 'var(--danger)'};font-weight:800;">${r.count_change > 0 ? '+' : ''}${r.count_change}張</td>
+                                            <td style="color:${r.weight_change > 0 ? 'var(--success)' : 'var(--danger)'};font-weight:700;">${r.weight_change > 0 ? '+' : ''}${r.weight_change}%</td>
+                                            <td><span style="padding:4px 6px;border-radius:8px;font-size:10px;font-weight:700;background:${r.status === '首次出現' ? 'rgba(16,185,129,0.15)' : r.status === '出清' ? 'rgba(239,68,68,0.15)' : 'var(--bg-light)'};color:${r.status === '首次出現' ? 'var(--success)' : r.status === '出清' ? 'var(--danger)' : 'var(--text-light)'};">${r.status}</span></td>
+                                        </tr>
+                                    `).join('')}
                                 </tbody>
                             </table>
                         </div>
@@ -1999,9 +1745,7 @@
 
             const modal = document.createElement('div');
             modal.className = 'modal-overlay';
-            modal.onclick = (e) => {
-                if (e.target === modal) modal.remove();
-            };
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
 
             modal.innerHTML = `
                 <div class="modal-content" onclick="event.stopPropagation()">
@@ -2011,17 +1755,15 @@
                         <p>點選下方 ETF 標籤切換查看不同 ETF 的持股記錄</p>
                     </div>
                     <div class="modal-etf-tabs">${etfTabs}</div>
-                    <div id="etfContentsContainer">${etfContents}</div>
-                    <div class="close-btn">
-                        <button class="btn" onclick="this.closest('.modal-overlay').remove()">關閉</button>
-                    </div>
+                    <div>${etfContents}</div>
+                    <div class="close-btn"><button class="btn" onclick="this.closest('.modal-overlay').remove()">關閉</button></div>
                 </div>
             `;
 
             document.body.appendChild(modal);
 
             const firstData = holdings[firstETF];
-            const firstCanvasId = `chart-${stockCode}-${firstETF}`.replace(/[^a-zA-Z0-9]/g, '');
+            const firstCanvasId = `chart${stockCode}${firstETF}`.replace(/[^a-zA-Z0-9]/g, '');
 
             setTimeout(() => {
                 drawTrendChart(firstCanvasId, firstData.history);
@@ -2034,15 +1776,13 @@
             document.querySelectorAll('.modal-etf-tab').forEach(tab => tab.classList.remove('active'));
             event.currentTarget.classList.add('active');
             document.querySelectorAll('.etf-content').forEach(content => content.classList.remove('active'));
-            const targetContent = document.querySelector(`.etf-content[data-etf="${etfCode}"]`);
-            if (targetContent) {
-                targetContent.classList.add('active');
-            }
+            document.querySelector(`.etf-content[data-etf="${etfCode}"]`).classList.add('active');
+
             const stock = stockData[stockCode];
             if (stock) {
                 const holdings = getETFHoldings(stock);
                 if (holdings[etfCode]) {
-                    const canvasId = `chart-${stockCode}-${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
+                    const canvasId = `chart${stockCode}${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
                     setTimeout(() => {
                         drawTrendChart(canvasId, holdings[etfCode].history);
                         drawKlineChartFromAPI(stockCode, etfCode, holdings[etfCode].history);
@@ -2051,7 +1791,6 @@
             }
         }
 
-        // ETF Tabs 切換
         document.getElementById('etfTabs').addEventListener('click', (e) => {
             if (e.target.classList.contains('etf-tab')) {
                 document.querySelectorAll('#etfTabs .etf-tab').forEach(t => t.classList.remove('active'));

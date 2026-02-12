@@ -4,10 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ETF 持股追蹤 Pro</title>
-    <!-- Lightweight Charts CDN -->
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Lightweight Charts CDN - 使用多個備援來源 -->
+    <script>
+        // 動態載入 Lightweight Charts，如果失敗會嘗試備援 CDN
+        (function() {
+            const cdns = [
+                'https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js',
+                'https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js'
+            ];
+
+            let loaded = false;
+            let currentIndex = 0;
+
+            function tryLoadScript() {
+                if (currentIndex >= cdns.length) {
+                    console.error('❌ 所有 Lightweight Charts CDN 都載入失敗');
+                    window.lightweightChartsLoadFailed = true;
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = cdns[currentIndex];
+                script.onload = function() {
+                    console.log('✅ Lightweight Charts 載入成功:', cdns[currentIndex]);
+                    loaded = true;
+                };
+                script.onerror = function() {
+                    console.warn('⚠️ CDN 載入失敗:', cdns[currentIndex]);
+                    currentIndex++;
+                    tryLoadScript();
+                };
+                document.head.appendChild(script);
+            }
+
+            tryLoadScript();
+        })();
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -37,6 +71,10 @@
         @keyframes float {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         body {
@@ -69,10 +107,6 @@
             border-top: 3px solid white;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         .loading-text {
@@ -904,6 +938,41 @@
             color: var(--text);
         }
 
+        .kline-error-box {
+            background: #FFF3CD;
+            border: 2px dashed #FFC107;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            color: #856404;
+        }
+
+        .kline-error-box h4 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .kline-error-box p {
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .kline-error-box button {
+            background: #FFC107;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .kline-error-box button:hover {
+            background: #FFB300;
+        }
+
         .modal-table {
             max-height: 400px;
             overflow-y: auto;
@@ -959,153 +1028,21 @@
             font-size: 16px;
         }
 
-        /* Debug 樣式 */
-        .debug-info {
-            background: #FFF3CD;
-            border: 2px solid #FFC107;
-            padding: 16px;
-            margin: 16px;
-            border-radius: 12px;
-            font-family: monospace;
-            font-size: 13px;
-            white-space: pre-wrap;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
         /* RWD */
         @media (max-width: 768px) {
             body { font-size: 15px; }
-
             .hero-header { padding: 24px 16px; }
             .hero-title { font-size: 22px; gap: 8px; }
             .hero-icon { font-size: 26px; }
             .hero-subtitle { font-size: 13px; margin-bottom: 14px; }
             .hero-date { font-size: 12px; padding: 7px 16px; }
-
             .container { padding: 0 10px 30px; }
-
             .main-tabs-container { display: none; }
-            .mobile-nav-grid {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-                margin: 12px 10px;
-            }
-
-            .mobile-nav-card { padding: 18px 12px; border-radius: 14px; }
-            .mobile-nav-icon { font-size: 32px; margin-bottom: 6px; }
-            .mobile-nav-label { font-size: 14px; }
-
-            .content-section { padding: 18px; margin: 12px 10px; border-radius: 16px; }
-
-            .etf-tabs { gap: 6px; padding-bottom: 16px; margin-bottom: 18px; }
-            .etf-tab {
-                flex: 1;
-                min-width: 110px;
-                padding: 10px 14px;
-                font-size: 13px;
-                border-radius: 10px;
-            }
-
-            .modal-etf-tabs { gap: 8px; margin-bottom: 18px; padding-bottom: 14px; }
-            .modal-etf-tab {
-                padding: 10px 16px;
-                font-size: 13px;
-                border-radius: 10px;
-                flex: 1;
-                min-width: 140px;
-            }
-
-            .modal-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-                margin-bottom: 18px;
-            }
-
-            .modal-stat-card { padding: 14px; border-radius: 10px; }
-            .modal-stat-card .label { font-size: 11px; margin-bottom: 8px; }
-            .modal-stat-card .value { font-size: 22px; }
-            .modal-stat-card .sub { font-size: 11px; margin-top: 6px; }
-
-            .modal-table {
-                max-height: 350px;
-                font-size: 13px;
-                overflow-x: hidden;
-            }
-
-            .modal-table table { width: 100%; table-layout: fixed; }
-            .modal-table th, .modal-table td {
-                padding: 10px 4px;
-                font-size: 11px;
-                word-wrap: break-word;
-            }
-
-            .modal-table th:nth-child(1), .modal-table td:nth-child(1) { width: 26%; }
-            .modal-table th:nth-child(2), .modal-table td:nth-child(2) { width: 14%; }
-            .modal-table th:nth-child(3), .modal-table td:nth-child(3) { width: 13%; }
-            .modal-table th:nth-child(4), .modal-table td:nth-child(4) { width: 14%; }
-            .modal-table th:nth-child(5), .modal-table td:nth-child(5) { width: 14%; }
-            .modal-table th:nth-child(6), .modal-table td:nth-child(6) { width: 19%; }
-
-            .modal-table td:nth-child(6) span {
-                padding: 4px 4px;
-                font-size: 9px;
-                line-height: 1.3;
-                display: inline-block;
-                white-space: normal;
-                word-break: keep-all;
-            }
-
-            .week-nav {
-                flex-direction: column;
-                gap: 10px;
-                padding: 16px;
-            }
-
-            .week-range { order: -1; font-size: 16px; }
-            .week-btn { width: 100%; padding: 13px 20px; font-size: 14px; }
-
+            .mobile-nav-grid { display: grid; }
+            .content-section { padding: 18px; margin: 12px 10px; }
             .calendar-table { display: none; }
             .mobile-calendar { display: block; }
-
-            .changes-grid {
-                grid-template-columns: 1fr;
-                gap: 14px;
-            }
-
-            .date-controls { flex-direction: column; }
-            .date-input-group { min-width: 100%; }
-            .btn { width: 100%; }
-
-            .summary-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-
-            .summary-card { padding: 16px; }
-
-            .modal-content {
-                margin: 0;
-                border-radius: 0;
-                min-height: 100vh;
-                padding: 20px 16px;
-            }
-
-            .modal-header h2 { font-size: 22px; padding-right: 36px; }
-            .modal-header p { font-size: 13px; }
-            .modal-close-btn { width: 36px; height: 36px; font-size: 22px; }
-
-            .chart-container { padding: 18px; margin-bottom: 18px; }
-            .chart-container h3 { font-size: 17px; margin-bottom: 14px; }
-
-            .stock-code { font-size: 14px; }
-            .stock-name { font-size: 13px; margin-left: 8px; }
-            .stock-count { font-size: 13px; }
-
-            .change-card { padding: 18px; }
-            .change-code { font-size: 20px; }
-            .change-name { font-size: 14px; }
+            .modal-content { margin: 0; border-radius: 0; min-height: 100vh; padding: 20px 16px; }
         }
     </style>
 </head>
@@ -1125,7 +1062,6 @@
     </div>
 
     <div class="container">
-        <!-- 桌面版 Tab -->
         <div class="main-tabs-container">
             <div class="main-tabs">
                 <button class="main-tab active" data-mode="dashboard">
@@ -1147,7 +1083,6 @@
             </div>
         </div>
 
-        <!-- 手機版 2x2 導航 -->
         <div class="mobile-nav-grid">
             <div class="mobile-nav-card active" data-mode="dashboard">
                 <div class="mobile-nav-icon">📅</div>
@@ -1167,26 +1102,22 @@
             </div>
         </div>
 
-        <!-- 頁面 1: 每週行事曆 -->
         <div id="dashboardMode" class="content-section">
             <div class="etf-tabs" id="dashboardEtfTabs">
                 <button class="etf-tab active" data-etf="00981A">00981A 統一台股增長</button>
                 <button class="etf-tab" data-etf="00980A">00980A 野村智慧優選</button>
                 <button class="etf-tab" data-etf="00982A">00982A 群益精選強棒</button>
             </div>
-
             <div class="week-nav">
                 <div class="week-range" id="weekRange">載入中...</div>
                 <button class="week-btn" id="prevWeekBtn" onclick="changeWeek(-1)">◀ 上一週</button>
                 <button class="week-btn latest" id="latestBtn" onclick="goToLatest()">📍 最新</button>
                 <button class="week-btn" id="nextWeekBtn" onclick="changeWeek(1)">下一週 ▶</button>
             </div>
-
             <div id="calendarContainer"></div>
             <div class="mobile-calendar" id="mobileCalendar"></div>
         </div>
 
-        <!-- 頁面 2: 今日變動 -->
         <div id="changesMode" class="content-section hidden">
             <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 22px; color: var(--text);">
                 📊 <span id="changesDateTitle"></span>
@@ -1199,7 +1130,6 @@
             <div id="changesGrid" class="changes-grid"></div>
         </div>
 
-        <!-- 頁面 3: 歷史查詢 -->
         <div id="historyMode" class="content-section hidden">
             <div class="date-selector">
                 <h3>📅 選擇日期與 ETF</h3>
@@ -1223,7 +1153,6 @@
             <div id="historyGrid" class="changes-grid"></div>
         </div>
 
-        <!-- 頁面 4: 股票搜尋 -->
         <div id="searchMode" class="content-section hidden">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="🔍 搜尋股票代碼或名稱... (例: 2330 或 台積電)">
@@ -1243,37 +1172,36 @@
         let chartInstances = new Map();
         let latestDataDate = null;
 
-        // ========== 工具函數：相容 etfholdings 和 etf_holdings ==========
+        // ========== 工具函數 ==========
         function getETFHoldings(stock) {
-            // 同時支援兩種命名方式
             return stock.etfholdings || stock.etf_holdings || {};
         }
 
-        // ========== 資料載入 (GitHub Pages 版本 - 增強錯誤處理) ==========
+        // ========== 資料載入 ==========
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('開始載入資料...');
+            console.log('🚀 開始載入資料...');
+            console.log('Chart.js:', typeof Chart);
+            console.log('LightweightCharts:', typeof LightweightCharts);
 
             Promise.all([
                 fetch('./processed_etf_data.json').then(r => {
-                    console.log('processed_etf_data.json 狀態:', r.status);
+                    console.log('📄 processed_etf_data.json 狀態:', r.status);
                     if (!r.ok) throw new Error(`無法載入 processed_etf_data.json (HTTP ${r.status})`);
                     return r.json();
                 }),
                 fetch('./stock_history_data.json').then(r => {
-                    console.log('stock_history_data.json 狀態:', r.status);
+                    console.log('📄 stock_history_data.json 狀態:', r.status);
                     if (!r.ok) throw new Error(`無法載入 stock_history_data.json (HTTP ${r.status})`);
                     return r.json();
                 })
             ])
                 .then(([processed, stock]) => {
                     console.log('✅ 資料載入成功');
-                    console.log('processed 資料:', processed);
-                    console.log('stock 資料筆數:', Object.keys(stock).length);
+                    console.log('股票數量:', Object.keys(stock).length);
 
                     processedData = processed;
                     stockData = stock;
 
-                    // 建立日期索引
                     const dateSet = new Set();
                     for (const stockItem of Object.values(stockData)) {
                         const holdings = getETFHoldings(stockItem);
@@ -1288,15 +1216,12 @@
                         }
                     }
                     allDates = Array.from(dateSet).sort().reverse();
-                    console.log('找到', allDates.length, '個日期');
 
                     if (allDates.length > 0) {
-                        // 將 "2025/11/07" 格式轉成 Date 物件
                         latestDataDate = new Date(allDates[0].replace(/\//g, '-'));
-                        console.log('最新資料日期:', latestDataDate);
+                        console.log('📅 最新資料日期:', allDates[0]);
                     }
 
-                    // 更新日期顯示
                     let first = processedData[Object.keys(processedData)[0]];
                     if (first && first.latest_date) {
                         document.getElementById('updateTime').textContent = first.latest_date;
@@ -1306,7 +1231,6 @@
                     renderCalendar();
                     renderChanges();
 
-                    // 搜尋功能
                     document.getElementById('searchInput').addEventListener('input', (e) => {
                         const keyword = e.target.value.toLowerCase();
                         const results = [];
@@ -1331,14 +1255,7 @@
                         <div style="text-align: center; color: white; max-width: 600px;">
                             <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
                             <h2 style="margin-bottom: 12px;">載入失敗</h2>
-                            <p style="margin-bottom: 12px; font-size: 14px;">${error.message}</p>
-                            <div class="debug-info" style="text-align: left; margin: 20px 0; background: rgba(255,255,255,0.1); padding: 16px; border-radius: 8px; font-size: 12px;">
-                                <strong>除錯資訊:</strong>
-                                <br>• 請確認 processed_etf_data.json 和 stock_history_data.json 在同一目錄
-                                <br>• 開啟瀏覽器 Console (F12) 查看詳細錯誤
-                                <br>• 網址: ${window.location.href}
-                                <br>• 錯誤: ${error.stack || error.message}
-                            </div>
+                            <p style="margin-bottom: 12px;">${error.message}</p>
                             <button class="btn" onclick="location.reload()">重新載入</button>
                         </div>
                     `;
@@ -1348,21 +1265,14 @@
         // ========== Tab 切換 ==========
         document.querySelectorAll('.main-tab, .mobile-nav-card').forEach(tab => {
             tab.addEventListener('click', () => {
-                // 移除所有 active
                 document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.mobile-nav-card').forEach(c => c.classList.remove('active'));
-
-                // 加上 active
                 tab.classList.add('active');
                 const mode = tab.dataset.mode;
-
-                // 同步另一個導航
                 const otherNav = tab.classList.contains('main-tab') 
                     ? document.querySelector(`.mobile-nav-card[data-mode="${mode}"]`)
                     : document.querySelector(`.main-tab[data-mode="${mode}"]`);
                 if (otherNav) otherNav.classList.add('active');
-
-                // 切換頁面
                 document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
                 currentMode = mode;
                 const modes = {
@@ -1375,13 +1285,11 @@
             });
         });
 
-        // ========== 週曆功能 (修正版) ==========
+        // ========== 週曆功能 ==========
         function getWeekRange(offset = 0) {
             if (!latestDataDate) return { start: new Date(), end: new Date(), dates: [] };
-
             const baseDate = new Date(latestDataDate);
             const dow = baseDate.getDay();
-
             const baseFriday = new Date(baseDate);
             if (dow === 6) {
                 baseFriday.setDate(baseFriday.getDate() - 1);
@@ -1390,13 +1298,10 @@
             } else {
                 baseFriday.setDate(baseFriday.getDate() + (5 - dow));
             }
-
             const targetFriday = new Date(baseFriday);
             targetFriday.setDate(baseFriday.getDate() + (offset * 7));
-
             const startFriday = new Date(targetFriday);
             startFriday.setDate(targetFriday.getDate() - 7);
-
             return { 
                 start: startFriday, 
                 end: targetFriday, 
@@ -1408,7 +1313,6 @@
             const dates = [];
             let current = new Date(start);
             current.setDate(current.getDate() + 1);
-
             while (current <= end) {
                 const day = current.getDay();
                 if (day !== 0 && day !== 6) {
@@ -1446,43 +1350,32 @@
             const weekRange = getWeekRange(currentWeekOffset);
             document.getElementById('weekRange').textContent = 
                 `${formatDate(weekRange.start)} ~ ${formatDate(weekRange.end)}`;
-
             const isLatestWeek = (currentWeekOffset === 0);
-
             document.getElementById('nextWeekBtn').disabled = isLatestWeek;
             document.getElementById('prevWeekBtn').disabled = false;
-
             const latestBtn = document.getElementById('latestBtn');
             if (isLatestWeek) {
                 latestBtn.style.display = 'none';
             } else {
                 latestBtn.style.display = 'block';
             }
-
             if (weekRange.dates.length === 0) {
                 document.getElementById('calendarContainer').innerHTML = '<p class="no-data">本週無交易日</p>';
                 document.getElementById('mobileCalendar').innerHTML = '<p class="no-data">本週無交易日</p>';
                 return;
             }
-
-            // 桌面版表格
             let tableHTML = '<table class="calendar-table"><thead><tr>';
             weekRange.dates.forEach(date => {
                 tableHTML += `<th>${getDayName(date)}<br><span style="font-size:14px;opacity:0.9;">${date.getMonth()+1}/${date.getDate()}</span></th>`;
             });
             tableHTML += '</tr></thead><tbody><tr>';
-
             weekRange.dates.forEach(date => {
                 const dateStr = formatDate(date);
                 const isToday = latestDataDate && dateStr === formatDate(latestDataDate);
                 const dayChanges = getChangesForDate(dateStr, dashboardETF);
-
                 tableHTML += `<td${isToday ? ' class="today-marker"' : ''}>`;
-
                 if (dayChanges.new.length > 0) {
-                    tableHTML += `<div class="change-section">
-                        <div class="change-section-title new">✨ 新增 ${dayChanges.new.length}</div>
-                        <div class="stock-mini-list">`;
+                    tableHTML += `<div class="change-section"><div class="change-section-title new">✨ 新增 ${dayChanges.new.length}</div><div class="stock-mini-list">`;
                     dayChanges.new.slice(0, 5).map(stock => {
                         tableHTML += `<div class="stock-mini-item new" onclick="showStockDetail('${stock.code}', '${dashboardETF}')">
                             <span class="stock-code">${stock.code}</span>
@@ -1495,11 +1388,8 @@
                     }
                     tableHTML += `</div></div>`;
                 }
-
                 if (dayChanges.deleted.length > 0) {
-                    tableHTML += `<div class="change-section">
-                        <div class="change-section-title delete">🗑️ 刪除 ${dayChanges.deleted.length}</div>
-                        <div class="stock-mini-list">`;
+                    tableHTML += `<div class="change-section"><div class="change-section-title delete">🗑️ 刪除 ${dayChanges.deleted.length}</div><div class="stock-mini-list">`;
                     dayChanges.deleted.slice(0, 5).map(stock => {
                         tableHTML += `<div class="stock-mini-item delete" onclick="showStockDetail('${stock.code}', '${dashboardETF}')">
                             <span class="stock-code">${stock.code}</span>
@@ -1511,24 +1401,18 @@
                     }
                     tableHTML += `</div></div>`;
                 }
-
                 if (dayChanges.new.length === 0 && dayChanges.deleted.length === 0) {
                     tableHTML += `<div class="no-data" style="padding: 20px;">無變動</div>`;
                 }
-
                 tableHTML += '</td>';
             });
-
             tableHTML += '</tr></tbody></table>';
             document.getElementById('calendarContainer').innerHTML = tableHTML;
-
-            // 手機版卡片
             let mobileHTML = '';
             weekRange.dates.forEach(date => {
                 const dateStr = formatDate(date);
                 const isToday = latestDataDate && dateStr === formatDate(latestDataDate);
                 const dayChanges = getChangesForDate(dateStr, dashboardETF);
-
                 mobileHTML += `<div class="mobile-day-card${isToday ? ' today-marker' : ''}">
                     <div class="mobile-day-header">
                         <div>
@@ -1537,11 +1421,8 @@
                         </div>
                         ${isToday ? '<div class="mobile-today-badge">今日</div>' : ''}
                     </div>`;
-
                 if (dayChanges.new.length > 0) {
-                    mobileHTML += `<div class="change-section">
-                        <div class="change-section-title new">✨ 新增 ${dayChanges.new.length}</div>
-                        <div class="stock-mini-list">`;
+                    mobileHTML += `<div class="change-section"><div class="change-section-title new">✨ 新增 ${dayChanges.new.length}</div><div class="stock-mini-list">`;
                     dayChanges.new.map(stock => {
                         mobileHTML += `<div class="stock-mini-item new" onclick="showStockDetail('${stock.code}', '${dashboardETF}')">
                             <span class="stock-code">${stock.code}</span>
@@ -1551,11 +1432,8 @@
                     });
                     mobileHTML += `</div></div>`;
                 }
-
                 if (dayChanges.deleted.length > 0) {
-                    mobileHTML += `<div class="change-section"${dayChanges.new.length > 0 ? ' style="margin-top: 14px;"' : ''}>
-                        <div class="change-section-title delete">🗑️ 刪除 ${dayChanges.deleted.length}</div>
-                        <div class="stock-mini-list">`;
+                    mobileHTML += `<div class="change-section"${dayChanges.new.length > 0 ? ' style="margin-top: 14px;"' : ''}><div class="change-section-title delete">🗑️ 刪除 ${dayChanges.deleted.length}</div><div class="stock-mini-list">`;
                     dayChanges.deleted.map(stock => {
                         mobileHTML += `<div class="stock-mini-item delete" onclick="showStockDetail('${stock.code}', '${dashboardETF}')">
                             <span class="stock-code">${stock.code}</span>
@@ -1564,29 +1442,23 @@
                     });
                     mobileHTML += `</div></div>`;
                 }
-
                 if (dayChanges.new.length === 0 && dayChanges.deleted.length === 0) {
                     mobileHTML += `<div class="no-data" style="padding: 22px;">無變動</div>`;
                 }
-
                 mobileHTML += '</div>';
             });
-
             document.getElementById('mobileCalendar').innerHTML = mobileHTML;
         }
 
         function getChangesForDate(dateStr, etf) {
             const newStocks = [];
             const deletedStocks = [];
-
             for (const [stockCode, stockInfo] of Object.entries(stockData)) {
                 const holdings = getETFHoldings(stockInfo);
                 const etfInfo = holdings?.[etf];
                 if (!etfInfo || !etfInfo.history) continue;
-
                 const record = etfInfo.history.find(r => r.date === dateStr);
                 if (!record) continue;
-
                 if (record.status === '首次出現') {
                     newStocks.push({
                         code: stockCode,
@@ -1602,7 +1474,6 @@
                     });
                 }
             }
-
             return { new: newStocks, deleted: deletedStocks };
         }
 
@@ -1613,15 +1484,12 @@
                 document.getElementById('changesGrid').innerHTML = '<p class="no-data">無異動資料</p>';
                 return;
             }
-
             const actualDate = data.latest_date;
             document.getElementById('changesDateTitle').textContent = actualDate;
-
             const grid = document.getElementById('changesGrid');
             grid.innerHTML = data.daily_changes.map(change => {
                 const typeClass = change.type === '新增' ? 'new-add' : change.type === '刪除' ? 'delete' : '';
                 const badgeClass = change.type === '新增' ? 'new' : change.type === '刪除' ? 'delete' : '';
-
                 return `
                     <div class="change-card ${typeClass}" onclick="showStockDetail('${change.code}', '${currentETF}')">
                         <div class="change-card-header">
@@ -1662,25 +1530,20 @@
         function loadHistoryData() {
             const selectedDate = document.getElementById('historyDate').value;
             const selectedETF = document.getElementById('historyETF').value;
-
             if (!selectedDate) {
                 document.getElementById('historyGrid').innerHTML = '<p class="no-data">請選擇日期</p>';
                 return;
             }
-
             const formattedDate = selectedDate.replace(/-/g, '/');
-
             if (!allDates.includes(formattedDate)) {
                 document.getElementById('historyGrid').innerHTML = `<p class="no-data">${formattedDate} 無資料</p>`;
                 return;
             }
-
             const changes = [];
             for (const [stockCode, stockInfo] of Object.entries(stockData)) {
                 const holdings = getETFHoldings(stockInfo);
                 const etfInfo = holdings?.[selectedETF];
                 if (!etfInfo || !etfInfo.history) continue;
-
                 const record = etfInfo.history.find(r => r.date === formattedDate);
                 if (record && record.status !== '持平' && record.count_change !== 0) {
                     changes.push({
@@ -1690,7 +1553,6 @@
                     });
                 }
             }
-
             document.getElementById('historySummary').innerHTML = `
                 <div class="summary-card">
                     <div class="label">總變動</div>
@@ -1709,17 +1571,14 @@
                     <div class="value">${changes.filter(c => c.status === '減持').length}</div>
                 </div>
             `;
-
             const grid = document.getElementById('historyGrid');
             if (changes.length === 0) {
                 grid.innerHTML = '<p class="no-data">當日無變動</p>';
                 return;
             }
-
             grid.innerHTML = changes.sort((a, b) => Math.abs(b.count_change) - Math.abs(a.count_change)).map(change => {
                 const typeClass = change.status === '首次出現' ? 'new-add' : change.status === '出清' ? 'delete' : '';
                 const badgeClass = change.status === '首次出現' ? 'new' : change.status === '出清' ? 'delete' : '';
-
                 return `
                     <div class="change-card ${typeClass}" onclick="showStockDetail('${change.code}', '${selectedETF}')">
                         <div class="change-card-header">
@@ -1763,13 +1622,11 @@
                 grid.innerHTML = '<p class="no-data">無符合結果</p>';
                 return;
             }
-
             grid.innerHTML = results.map(stock => {
                 const etfCount = Object.keys(stock.holdings || {}).length;
                 const totalCount = Object.values(stock.holdings || {})
                     .reduce((sum, h) => sum + (h.current_count || 0), 0);
                 const firstETF = Object.keys(stock.holdings || {})[0];
-
                 return `
                     <div class="change-card" onclick="showStockDetail('${stock.code}', '${firstETF}')">
                         <div class="change-card-header">
@@ -1799,14 +1656,11 @@
             if (chartInstances.has(canvasId)) {
                 chartInstances.get(canvasId).destroy();
             }
-
             const sortedHistory = [...history].sort((a, b) => a.date.localeCompare(b.date));
             const labels = sortedHistory.map(h => h.date);
             const counts = sortedHistory.map(h => h.count);
-
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
-
             const ctx = canvas.getContext('2d');
             const newChart = new Chart(ctx, {
                 type: 'line',
@@ -1853,38 +1707,46 @@
                     }
                 }
             });
-
             chartInstances.set(canvasId, newChart);
         }
 
-        // ========== K 線圖功能 (Yahoo Finance API) ==========
+        // ========== K 線圖功能 (增強版) ==========
 
         async function fetchYahooKlines(stockCode) {
+            console.log(`📡 開始抓取 ${stockCode} 的股價資料...`);
             const symbol = `${stockCode}.TW`;
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=6mo&interval=1d`;
 
             try {
                 const response = await fetch(url);
                 if (!response.ok) {
+                    console.log(`⚠️ .TW 失敗，嘗試 .TWO (上櫃)`);
                     const twoUrl = url.replace('.TW', '.TWO');
                     const twoResponse = await fetch(twoUrl);
-                    if (!twoResponse.ok) throw new Error('API 請求失敗');
-                    return parseYahooData(await twoResponse.json());
+                    if (!twoResponse.ok) {
+                        console.error(`❌ ${stockCode} 兩個 API 都失敗`);
+                        throw new Error('API 請求失敗');
+                    }
+                    console.log(`✅ .TWO 成功`);
+                    return parseYahooData(await twoResponse.json(), stockCode);
                 }
-                return parseYahooData(await response.json());
+                console.log(`✅ .TW 成功`);
+                return parseYahooData(await response.json(), stockCode);
             } catch (error) {
-                console.error(`抓取 ${stockCode} 股價失敗:`, error);
+                console.error(`❌ 抓取 ${stockCode} 股價失敗:`, error);
                 return null;
             }
         }
 
-        function parseYahooData(data) {
+        function parseYahooData(data, stockCode) {
             try {
                 const result = data.chart.result[0];
                 const timestamps = result.timestamp;
                 const quotes = result.indicators.quote[0];
 
-                return timestamps
+                console.log(`📊 ${stockCode} 解析到 ${timestamps.length} 筆資料`);
+
+                const klines = timestamps
                     .map((ts, i) => ({
                         time: new Date(ts * 1000).toISOString().split('T')[0],
                         open: quotes.open[i] || 0,
@@ -1893,8 +1755,11 @@
                         close: quotes.close[i] || 0,
                     }))
                     .filter(k => k.close > 0);
+
+                console.log(`✅ 過濾後 ${klines.length} 筆有效資料`);
+                return klines;
             } catch (error) {
-                console.error('解析股價資料失敗:', error);
+                console.error(`❌ 解析 ${stockCode} 資料失敗:`, error);
                 return null;
             }
         }
@@ -1903,104 +1768,140 @@
             const containerId = `kline-${stockCode}-${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
             const container = document.getElementById(containerId);
 
-            if (!container) return;
+            console.log(`🎨 準備繪製 K 線圖: ${stockCode} (容器 ID: ${containerId})`);
+
+            if (!container) {
+                console.error(`❌ 找不到容器: ${containerId}`);
+                return;
+            }
+
+            // 檢查 Lightweight Charts 是否載入
+            if (typeof LightweightCharts === 'undefined') {
+                console.error('❌ LightweightCharts 未載入');
+                container.innerHTML = `
+                    <div class="kline-error-box">
+                        <h4>⚠️ 圖表庫載入失敗</h4>
+                        <p>Lightweight Charts 未成功載入<br>可能是網路問題或 CDN 被封鎖</p>
+                        <button onclick="location.reload()">重新載入頁面</button>
+                    </div>
+                `;
+                return;
+            }
 
             container.innerHTML = '<div style="text-align:center; padding:100px; color:#64748B;">⏳ 載入股價資料中...</div>';
 
             const klines = await fetchYahooKlines(stockCode);
 
             if (!klines || klines.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:100px; color:#EF4444;">❌ 無法載入股價資料</div>';
+                console.error(`❌ ${stockCode} 無股價資料`);
+                container.innerHTML = `
+                    <div class="kline-error-box">
+                        <h4>❌ 無法載入股價資料</h4>
+                        <p>可能原因：<br>
+                        1. Yahoo Finance API 限流<br>
+                        2. 該股票代碼不存在<br>
+                        3. 網路連線問題</p>
+                        <button onclick="drawKlineChartFromAPI('${stockCode}', '${etfCode}', ${JSON.stringify(etfHistory).replace(/'/g, "\\'")})">重試</button>
+                    </div>
+                `;
                 return;
             }
 
             container.innerHTML = '';
+            console.log(`✅ 開始繪製 ${stockCode} 的 K 線圖...`);
 
-            const chart = LightweightCharts.createChart(container, {
-                width: container.offsetWidth,
-                height: 400,
-                layout: {
-                    backgroundColor: '#FFFFFF',
-                    textColor: '#1E293B',
-                },
-                grid: {
-                    vertLines: { color: '#F0F0F0' },
-                    horzLines: { color: '#F0F0F0' },
-                },
-                timeScale: {
-                    borderColor: '#E2E8F0',
-                    timeVisible: true,
-                },
-                rightPriceScale: {
-                    borderColor: '#E2E8F0',
-                },
-            });
-
-            const candlestickSeries = chart.addCandlestickSeries({
-                upColor: '#EF4444',
-                downColor: '#10B981',
-                borderUpColor: '#EF4444',
-                borderDownColor: '#10B981',
-                wickUpColor: '#EF4444',
-                wickDownColor: '#10B981',
-            });
-
-            candlestickSeries.setData(klines);
-
-            const markers = etfHistory
-                .filter(r => ['首次出現', '增持', '減持', '出清'].includes(r.status))
-                .map(record => {
-                    const dateStr = record.date.replace(/\//g, '-');
-                    return {
-                        time: dateStr,
-                        position: (record.status === '減持' || record.status === '出清') ? 'aboveBar' : 'belowBar',
-                        color: (record.status === '減持' || record.status === '出清') ? '#EF4444' : '#10B981',
-                        shape: (record.status === '減持' || record.status === '出清') ? 'arrowDown' : 'arrowUp',
-                        text: `${record.status} ${record.count}張`,
-                    };
+            try {
+                const chart = LightweightCharts.createChart(container, {
+                    width: container.offsetWidth,
+                    height: 400,
+                    layout: {
+                        backgroundColor: '#FFFFFF',
+                        textColor: '#1E293B',
+                    },
+                    grid: {
+                        vertLines: { color: '#F0F0F0' },
+                        horzLines: { color: '#F0F0F0' },
+                    },
+                    timeScale: {
+                        borderColor: '#E2E8F0',
+                        timeVisible: true,
+                    },
+                    rightPriceScale: {
+                        borderColor: '#E2E8F0',
+                    },
                 });
 
-            candlestickSeries.setMarkers(markers);
+                const candlestickSeries = chart.addCandlestickSeries({
+                    upColor: '#EF4444',
+                    downColor: '#10B981',
+                    borderUpColor: '#EF4444',
+                    borderDownColor: '#10B981',
+                    wickUpColor: '#EF4444',
+                    wickDownColor: '#10B981',
+                });
 
-            const resizeObserver = new ResizeObserver(() => {
-                chart.applyOptions({ width: container.offsetWidth });
-            });
-            resizeObserver.observe(container);
+                candlestickSeries.setData(klines);
+                console.log(`✅ K 線資料已設定`);
+
+                const markers = etfHistory
+                    .filter(r => ['首次出現', '增持', '減持', '出清'].includes(r.status))
+                    .map(record => {
+                        const dateStr = record.date.replace(/\//g, '-');
+                        return {
+                            time: dateStr,
+                            position: (record.status === '減持' || record.status === '出清') ? 'aboveBar' : 'belowBar',
+                            color: (record.status === '減持' || record.status === '出清') ? '#EF4444' : '#10B981',
+                            shape: (record.status === '減持' || record.status === '出清') ? 'arrowDown' : 'arrowUp',
+                            text: `${record.status} ${record.count}張`,
+                        };
+                    });
+
+                candlestickSeries.setMarkers(markers);
+                console.log(`✅ 標記已設定 (${markers.length} 個)`);
+
+                const resizeObserver = new ResizeObserver(() => {
+                    chart.applyOptions({ width: container.offsetWidth });
+                });
+                resizeObserver.observe(container);
+
+                console.log(`🎉 ${stockCode} K 線圖繪製完成！`);
+            } catch (error) {
+                console.error(`❌ 繪製 K 線圖時發生錯誤:`, error);
+                container.innerHTML = `
+                    <div class="kline-error-box">
+                        <h4>❌ 繪製圖表失敗</h4>
+                        <p>${error.message}</p>
+                        <button onclick="console.log(error)">查看完整錯誤</button>
+                    </div>
+                `;
+            }
         }
 
-        // ========== 股票詳情 Modal (增強錯誤處理) ==========
+        // ========== 股票詳情 Modal ==========
         function showStockDetail(stockCode, preferredETF = null) {
-            console.log('顯示股票詳情:', stockCode, preferredETF);
+            console.log(`🔍 顯示股票詳情: ${stockCode}, ETF: ${preferredETF}`);
 
             const stock = stockData[stockCode];
             if (!stock) {
-                console.error('找不到股票:', stockCode);
-                console.log('現有股票代碼:', Object.keys(stockData).slice(0, 10));
-                alert(`找不到股票資料 (代碼: ${stockCode})
-
-請按 F12 開啟 Console 查看詳細資訊`);
+                console.error(`❌ 找不到股票: ${stockCode}`);
+                alert(`找不到股票資料 (代碼: ${stockCode})`);
                 return;
             }
 
             const holdings = getETFHoldings(stock);
-            console.log('holdings:', holdings);
-
             if (!holdings || Object.keys(holdings).length === 0) {
-                alert(`該股票目前無 ETF 持有
-股票: ${stock.name} (${stockCode})`);
+                alert(`該股票目前無 ETF 持有\n股票: ${stock.name} (${stockCode})`);
                 return;
             }
 
             const etfList = Object.keys(holdings);
             const firstETF = (preferredETF && etfList.includes(preferredETF)) ? preferredETF : etfList[0];
 
-            // 建立 ETF Tabs
             const etfTabs = etfList.map(etf => {
                 const data = holdings[etf];
                 return `<button class="modal-etf-tab ${etf === firstETF ? 'active' : ''}" data-etf="${etf}" onclick="switchModalETF(event, '${stockCode}', '${etf}')">${etf} ${data.etf_name}</button>`;
             }).join('');
 
-            // 建立每個 ETF 的內容
             const etfContents = etfList.map(etf => {
                 const data = holdings[etf];
                 const canvasId = `chart-${stockCode}-${etf}`.replace(/[^a-zA-Z0-9]/g, '');
@@ -2070,7 +1971,7 @@
                                                     ${r.weight_change > 0 ? '+' : ''}${r.weight_change}%
                                                 </td>
                                                 <td>
-                                                    <span style="padding: 4px 6px; border-radius: 8px; font-size: 10px; font-weight: 700; line-height: 1.3; display: inline-block; white-space: normal; background: ${
+                                                    <span style="padding: 4px 6px; border-radius: 8px; font-size: 10px; font-weight: 700; background: ${
                                                         r.status === '首次出現' ? 'rgba(16, 185, 129, 0.15)' : 
                                                         r.status === '出清' ? 'rgba(239, 68, 68, 0.15)' : 
                                                         'var(--bg-light)'
@@ -2078,7 +1979,7 @@
                                                         r.status === '首次出現' ? 'var(--success)' : 
                                                         r.status === '出清' ? 'var(--danger)' : 
                                                         'var(--text-light)'
-                                                    };">${r.status}${r.status === '首次出現' ? '<br>🎉' : ''}</span>
+                                                    };">${r.status}</span>
                                                 </td>
                                             </tr>
                                         `).join('')}
@@ -2098,7 +1999,7 @@
             modal.innerHTML = `
                 <div class="modal-content" onclick="event.stopPropagation()">
                     <div class="modal-header">
-                        <button class="modal-close-btn" onclick="this.closest('.modal-overlay').remove()" title="關閉">×</button>
+                        <button class="modal-close-btn" onclick="this.closest('.modal-overlay').remove()">×</button>
                         <h2>${stockCode} ${stock.name}</h2>
                         <p>點選下方 ETF 標籤切換查看不同 ETF 的持股記錄</p>
                     </div>
@@ -2123,16 +2024,13 @@
 
         function switchModalETF(event, stockCode, etfCode) {
             event.stopPropagation();
-
             document.querySelectorAll('.modal-etf-tab').forEach(tab => tab.classList.remove('active'));
             event.currentTarget.classList.add('active');
-
             document.querySelectorAll('.etf-content').forEach(content => content.classList.remove('active'));
             const targetContent = document.querySelector(`.etf-content[data-etf="${etfCode}"]`);
             if (targetContent) {
                 targetContent.classList.add('active');
             }
-
             const stock = stockData[stockCode];
             if (stock) {
                 const holdings = getETFHoldings(stock);

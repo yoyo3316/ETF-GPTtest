@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETF 持股追蹤 Pro - 完美版</title>
+    <title>ETF 持股追蹤 Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
     <style>
@@ -970,116 +970,116 @@
             font-weight: 600;
         }
 
-        /* 區間最大獲利分析 - 超大間距 */
+        /* 獲利分析區塊 - 增加下方間距 */
         .profit-analysis {
             background: linear-gradient(135deg, #10B981 0%, #059669 100%);
             border-radius: 20px;
-            padding: 32px;
-            margin-bottom: 50px;
+            padding: 28px;
+            margin-bottom: 40px;
             color: white;
             box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
             animation: slideIn 0.5s;
         }
 
         .profit-analysis h3 {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .profit-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
         }
 
         .profit-item {
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 14px;
+            padding: 16px;
+            border-radius: 12px;
             border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .profit-item .label {
-            font-size: 13px;
+            font-size: 12px;
             opacity: 0.95;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             text-transform: uppercase;
             font-weight: 800;
             letter-spacing: 0.5px;
         }
 
         .profit-item .value {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 900;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .profit-item .sub {
-            font-size: 15px;
-            margin-top: 10px;
+            font-size: 13px;
+            margin-top: 8px;
             opacity: 0.9;
             font-weight: 600;
         }
 
         .profit-highlight {
             background: rgba(255, 255, 255, 0.25);
-            padding: 20px;
-            border-radius: 14px;
+            padding: 18px;
+            border-radius: 12px;
             text-align: center;
             border: 2px solid rgba(255, 255, 255, 0.4);
         }
 
         .profit-highlight .label {
-            font-size: 14px;
-            margin-bottom: 12px;
+            font-size: 13px;
+            margin-bottom: 10px;
             opacity: 0.95;
             font-weight: 800;
         }
 
         .profit-highlight .value {
-            font-size: 48px;
+            font-size: 42px;
             font-weight: 900;
             text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .profit-highlight .sub {
-            font-size: 16px;
-            margin-top: 12px;
+            font-size: 14px;
+            margin-top: 10px;
             opacity: 0.9;
         }
 
-        /* 圖表容器 - 超大間距 */
+        /* 圖表容器 - 增加下方間距 */
         .chart-container {
             background: var(--bg-light);
             border-radius: 20px;
-            padding: 32px;
-            margin-bottom: 60px;
+            padding: 28px;
+            margin-bottom: 40px;
         }
 
         .chart-container h3 {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 800;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             color: var(--text);
         }
 
-        /* 超大字體表格 */
+        /* 明細表格 - 只微調字體，保持原有間距 */
         .modal-table {
             max-height: 500px;
             overflow-y: auto;
-            border: 3px solid var(--primary);
-            border-radius: 20px;
+            border: 2px solid var(--border);
+            border-radius: 16px;
             margin-bottom: 24px;
             margin-top: 4px;
         }
 
-        .modal-table::-webkit-scrollbar { width: 12px; }
+        .modal-table::-webkit-scrollbar { width: 10px; }
         .modal-table::-webkit-scrollbar-track { background: var(--bg-light); border-radius: 10px; }
         .modal-table::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
 
@@ -1091,61 +1091,53 @@
         .modal-table th {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 24px 20px;
+            padding: 16px;
             text-align: left;
-            font-size: 18px;
-            font-weight: 900;
+            font-size: 17px;
+            font-weight: 800;
             position: sticky;
             top: 0;
-            text-transform: uppercase;
             z-index: 10;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-            border-bottom: 3px solid var(--primary);
-            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
         }
 
         .modal-table td {
-            padding: 24px 20px;
-            border-bottom: 2px solid var(--border);
-            font-size: 20px;
-            font-weight: 700;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 17px;
+            font-weight: 600;
         }
 
         .modal-table tbody tr {
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
         .modal-table tbody tr:hover {
-            background: linear-gradient(90deg, rgba(79, 70, 229, 0.08) 0%, transparent 100%);
-            transform: scale(1.01);
+            background: var(--bg-light);
         }
 
         .modal-table td:first-child {
-            font-weight: 900;
+            font-weight: 800;
             color: var(--primary);
-            font-size: 21px;
         }
 
         .modal-table .count-cell {
-            font-size: 22px;
-            font-weight: 900;
+            font-weight: 800;
             color: var(--text);
         }
 
         .modal-table .change-cell {
-            font-size: 21px;
-            font-weight: 900;
+            font-weight: 800;
         }
 
         .modal-table .status-badge {
-            padding: 10px 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 900;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
             display: inline-block;
             text-align: center;
-            min-width: 90px;
-            letter-spacing: 0.5px;
+            min-width: 70px;
         }
 
         .modal-table .status-badge.new {
@@ -1208,10 +1200,10 @@
             .modal-content { margin: 0; border-radius: 0; min-height: 100vh; padding: 20px 16px; max-width: 100%; }
             .debug-panel { width: 90%; right: 5%; left: 5%; bottom: 10px; max-height: 250px; font-size: 11px; }
             .debug-toggle { right: 10px; bottom: 10px; padding: 10px 16px; font-size: 12px; }
-            .modal-table td { font-size: 18px; padding: 20px 16px; }
-            .modal-table th { font-size: 16px; padding: 20px 16px; }
-            .chart-container { margin-bottom: 40px; padding: 24px; }
-            .profit-analysis { margin-bottom: 40px; padding: 24px; }
+            .modal-table td { font-size: 15px; padding: 12px; }
+            .modal-table th { font-size: 15px; padding: 12px; }
+            .chart-container { margin-bottom: 30px; padding: 20px; }
+            .profit-analysis { margin-bottom: 30px; padding: 20px; }
         }
     </style>
 </head>
@@ -1345,29 +1337,23 @@
             return stock.etfholdings || stock.etf_holdings || {};
         }
 
-        // 計算區間最大獲利率（買入後的最高點漲幅）
         async function calculateMaxProfit(stockCode, history, priceData) {
             if (!history || history.length < 1) return null;
             if (!priceData || priceData.length === 0) return null;
 
-            // 找出首次買入記錄
             const buyRecord = history.find(r => r.status === '首次出現');
             if (!buyRecord) return null;
 
             const buyDate = buyRecord.date.replace(/\//g, '-');
-
-            // 找出買入日的股價
             const buyPrice = priceData.find(p => p.date === buyDate);
             if (!buyPrice) {
                 debugLog(`⚠️ 找不到 ${buyDate} 的股價`, 'warning');
                 return null;
             }
 
-            // 找出買入後的所有股價
             const pricesAfterBuy = priceData.filter(p => p.date >= buyDate);
             if (pricesAfterBuy.length === 0) return null;
 
-            // 找出最高價
             let maxPrice = buyPrice.close;
             let maxPriceDate = buyDate;
 
@@ -1378,7 +1364,6 @@
                 }
             }
 
-            // 計算漲幅
             const profitRate = ((maxPrice - buyPrice.close) / buyPrice.close * 100).toFixed(2);
 
             return {
@@ -1391,7 +1376,6 @@
             };
         }
 
-        // 從 FinMind 取得股價資料
         async function fetchStockPrice(stockCode, startDate) {
             const cacheKey = `${stockCode}_${startDate}`;
             if (stockPriceCache.has(cacheKey)) {
@@ -1407,6 +1391,7 @@
                     token: ''
                 });
 
+                debugLog(`📡 FinMind API 請求: ${stockCode}`, 'info');
                 const response = await fetch(`${apiUrl}?${params}`);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -1422,17 +1407,16 @@
                 }));
 
                 stockPriceCache.set(cacheKey, priceData);
+                debugLog(`✅ ${stockCode} 取得 ${priceData.length} 筆資料`, 'success');
                 return priceData;
             } catch (error) {
-                debugLog(`❌ 股價抓取失敗 ${stockCode}: ${error.message}`, 'error');
+                debugLog(`❌ ${stockCode} API 失敗: ${error.message}`, 'error');
                 return null;
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             debugLog('🚀 開始初始化...', 'success');
-            debugLog(`Chart.js: ${typeof Chart}`, 'info');
-            debugLog(`LightweightCharts: ${typeof LightweightCharts}`, 'info');
 
             Promise.all([
                 fetch('./processed_etf_data.json').then(r => {
@@ -1448,7 +1432,6 @@
             ])
                 .then(([processed, stock]) => {
                     debugLog('✅ 資料載入成功', 'success');
-                    debugLog(`📊 股票數量: ${Object.keys(stock).length}`, 'info');
 
                     processedData = processed;
                     stockData = stock;
@@ -1505,7 +1488,6 @@
                             <h2 style="margin-bottom: 12px;">載入失敗</h2>
                             <p style="margin-bottom: 20px; font-size: 14px;">${error.message}</p>
                             <button class="btn" onclick="location.reload()">重新載入</button>
-                            <button class="btn" onclick="toggleDebug()" style="margin-left: 10px; background: #F59E0B;">查看除錯</button>
                         </div>
                     `;
                 });
@@ -1839,7 +1821,7 @@
             const containerId = `kline${stockCode}${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
             const container = document.getElementById(containerId);
 
-            debugLog(`🎨 準備繪製 K 線: ${stockCode} (FinMind)`, 'info');
+            debugLog(`🎨 準備繪製 K 線: ${stockCode}`, 'info');
 
             if (!container) {
                 debugLog(`❌ 找不到容器: ${containerId}`, 'error');
@@ -1849,7 +1831,7 @@
             if (typeof LightweightCharts === 'undefined') {
                 debugLog('❌ LightweightCharts 未載入', 'error');
                 container.innerHTML = '<div style="padding:80px 20px;text-align:center;color:#EF4444;background:#FEE;border-radius:12px;">❌ 圖表庫未載入</div>';
-                return;
+                return null;
             }
 
             container.innerHTML = '<div class="kline-loading">載入完整歷史股價中...</div>';
@@ -1857,8 +1839,6 @@
             try {
                 const sortedHistory = [...etfHistory].sort((a, b) => a.date.localeCompare(b.date));
                 const startDate = sortedHistory[0]?.date.replace(/\//g, '-') || '2024-01-01';
-
-                debugLog(`📡 抓取 ${stockCode} 完整歷史股價 (${startDate})`, 'info');
 
                 const priceData = await fetchStockPrice(stockCode, startDate);
 
@@ -1934,8 +1914,7 @@
                 debugLog(`❌ ${stockCode} FinMind 失敗: ${error.message}`, 'error');
                 container.innerHTML = `<div style="padding:60px 20px;text-align:center;color:#856404;background:#FFF3CD;border:2px solid #FFC107;border-radius:12px;">
                     ⚠️ 無法載入股價資料<br>
-                    <span style="font-size:14px;margin-top:8px;display:block;">${error.message}</span><br>
-                    <span style="font-size:13px;margin-top:8px;display:block;color:#64748B;">可能原因：股票代碼不存在或 API 暫時無法使用</span>
+                    <span style="font-size:14px;margin-top:8px;display:block;">${error.message}</span>
                 </div>`;
                 return null;
             }
@@ -1981,8 +1960,8 @@
 
                         <div class="profit-analysis" id="profit${stockCode}${etf}">
                             <h3>💰 區間最大獲利分析</h3>
-                            <div style="text-align:center;padding:40px;color:rgba(255,255,255,0.8);">
-                                <div style="font-size:32px;margin-bottom:12px;">⏳</div>
+                            <div style="text-align:center;padding:30px;color:rgba(255,255,255,0.8);">
+                                <div style="font-size:28px;margin-bottom:10px;">⏳</div>
                                 <div>正在計算中...</div>
                             </div>
                         </div>
@@ -2020,11 +1999,11 @@
                                         <tr>
                                             <td>${r.date}</td>
                                             <td class="count-cell">${r.count}張</td>
-                                            <td style="font-size:19px;font-weight:700;">${r.weight}%</td>
+                                            <td>${r.weight}%</td>
                                             <td class="change-cell" style="color:${r.count_change > 0 ? 'var(--success)' : r.count_change < 0 ? 'var(--danger)' : 'var(--text-light)'};">
                                                 ${r.count_change > 0 ? '+' : ''}${r.count_change}張
                                             </td>
-                                            <td style="color:${r.weight_change > 0 ? 'var(--success)' : r.weight_change < 0 ? 'var(--danger)' : 'var(--text-light)'};font-size:19px;font-weight:800;">
+                                            <td style="color:${r.weight_change > 0 ? 'var(--success)' : r.weight_change < 0 ? 'var(--danger)' : 'var(--text-light)'};">
                                                 ${r.weight_change > 0 ? '+' : ''}${r.weight_change}%
                                             </td>
                                             <td>
@@ -2073,7 +2052,7 @@
                     const profitContainer = document.getElementById(profitId);
 
                     if (maxProfit && profitContainer) {
-                        const profitColor = maxProfit.profitRate >= 0 ? '#10B981' : '#EF4444';
+                        const profitColor = maxProfit.profitRate >= 0 ? '#FFFFFF' : '#FFCCCC';
                         profitContainer.innerHTML = `
                             <h3>💰 區間最大獲利分析（買入後最高點）</h3>
                             <div class="profit-grid">
@@ -2108,8 +2087,8 @@
                     } else if (profitContainer) {
                         profitContainer.innerHTML = `
                             <h3>💰 區間最大獲利分析</h3>
-                            <div style="text-align:center;padding:40px;color:rgba(255,255,255,0.8);">
-                                <div style="font-size:32px;margin-bottom:12px;">ℹ️</div>
+                            <div style="text-align:center;padding:30px;color:rgba(255,255,255,0.8);">
+                                <div style="font-size:28px;margin-bottom:10px;">ℹ️</div>
                                 <div>無法計算（缺少買入記錄或股價資料）</div>
                             </div>
                         `;
@@ -2142,7 +2121,7 @@
                             const profitContainer = document.getElementById(profitId);
 
                             if (maxProfit && profitContainer) {
-                                const profitColor = maxProfit.profitRate >= 0 ? '#10B981' : '#EF4444';
+                                const profitColor = maxProfit.profitRate >= 0 ? '#FFFFFF' : '#FFCCCC';
                                 profitContainer.innerHTML = `
                                     <h3>💰 區間最大獲利分析（買入後最高點）</h3>
                                     <div class="profit-grid">

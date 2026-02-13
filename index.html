@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETF 持股追蹤 Pro</title>
+    <title>ETF 持股追蹤 Pro - TradingView 版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://s3.tradingview.com/tv.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -17,6 +17,7 @@
             --success: #10B981;
             --danger: #EF4444;
             --warning: #F59E0B;
+            --info: #3B82F6;
             --dark: #0F172A;
             --text: #1E293B;
             --text-light: #64748B;
@@ -39,6 +40,11 @@
 
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         body {
@@ -831,7 +837,7 @@
         }
 
         .modal-content {
-            max-width: 1100px;
+            max-width: 1400px;
             margin: 40px auto;
             background: white;
             border-radius: 24px;
@@ -959,6 +965,59 @@
             font-weight: 600;
         }
 
+        /* 新增：區間最大獲利統計卡 */
+        .profit-analysis {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 26px;
+            color: white;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+            animation: slideIn 0.5s;
+        }
+
+        .profit-analysis h3 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .profit-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .profit-item .label {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .profit-item .value {
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        .profit-item .sub {
+            font-size: 13px;
+            margin-top: 6px;
+            opacity: 0.85;
+        }
+
         .chart-container {
             background: var(--bg-light);
             border-radius: 16px;
@@ -971,6 +1030,14 @@
             font-weight: 800;
             margin-bottom: 18px;
             color: var(--text);
+        }
+
+        .tradingview-widget-container {
+            width: 100%;
+            height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
         }
 
         .modal-table {
@@ -1037,9 +1104,10 @@
             .content-section { padding: 18px; margin: 12px 10px; }
             .calendar-table { display: none; }
             .mobile-calendar { display: block; }
-            .modal-content { margin: 0; border-radius: 0; min-height: 100vh; padding: 20px 16px; }
+            .modal-content { margin: 0; border-radius: 0; min-height: 100vh; padding: 20px 16px; max-width: 100%; }
             .debug-panel { width: 90%; right: 5%; left: 5%; bottom: 10px; max-height: 250px; font-size: 11px; }
             .debug-toggle { right: 10px; bottom: 10px; padding: 10px 16px; font-size: 12px; }
+            .tradingview-widget-container { height: 400px; }
         }
     </style>
 </head>
@@ -1172,10 +1240,43 @@
             return stock.etfholdings || stock.etf_holdings || {};
         }
 
+        // 計算區間最大獲利
+        function calculateMaxProfit(history) {
+            if (!history || history.length < 2) return null;
+
+            // 只考慮有買入/賣出動作的記錄
+            const trades = history.filter(r => ['首次出現', '增持', '減持', '出清'].includes(r.status));
+            if (trades.length < 2) return null;
+
+            let maxProfit = 0;
+            let bestBuy = null;
+            let bestSell = null;
+
+            // 找出所有買入點
+            const buyPoints = trades.filter(r => ['首次出現', '增持'].includes(r.status));
+            // 找出所有賣出點
+            const sellPoints = trades.filter(r => ['減持', '出清'].includes(r.status));
+
+            if (buyPoints.length === 0 || sellPoints.length === 0) return null;
+
+            // 取最早買入和最晚賣出
+            bestBuy = buyPoints[0];
+            bestSell = sellPoints[sellPoints.length - 1];
+
+            return {
+                buyDate: bestBuy.date,
+                sellDate: bestSell.date,
+                buyCount: bestBuy.count,
+                sellCount: bestSell.count,
+                buyStatus: bestBuy.status,
+                sellStatus: bestSell.status
+            };
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             debugLog('🚀 開始初始化...', 'success');
             debugLog(`Chart.js: ${typeof Chart}`, 'info');
-            debugLog(`LightweightCharts: ${typeof LightweightCharts}`, 'info');
+            debugLog(`TradingView: ${typeof TradingView}`, 'info');
 
             Promise.all([
                 fetch('./processed_etf_data.json').then(r => {
@@ -1578,143 +1679,47 @@
             chartInstances.set(canvasId, newChart);
         }
 
-        // 使用 CORS 代理的 K 線圖函數
-        async function drawKlineChartFromAPI(stockCode, etfCode, etfHistory) {
-            const containerId = `kline${stockCode}${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
+        // 使用 TradingView Widget
+        function drawTradingViewChart(stockCode, etfCode, etfHistory, containerId) {
+            debugLog(`📊 載入 TradingView 圖表: ${stockCode}`, 'info');
+
             const container = document.getElementById(containerId);
-
-            debugLog(`🎨 準備繪製 K 線: ${stockCode}`, 'info');
-
             if (!container) {
                 debugLog(`❌ 找不到容器: ${containerId}`, 'error');
                 return;
             }
 
-            if (typeof LightweightCharts === 'undefined') {
-                debugLog('❌ LightweightCharts 未載入', 'error');
-                container.innerHTML = '<div style="padding:80px 20px;text-align:center;color:#EF4444;background:#FEE;border-radius:12px;">❌ 圖表庫未載入</div>';
+            if (typeof TradingView === 'undefined') {
+                debugLog('❌ TradingView 未載入', 'error');
+                container.innerHTML = '<div style="padding:80px 20px;text-align:center;color:#EF4444;">❌ TradingView 載入失敗</div>';
                 return;
             }
 
-            container.innerHTML = '<div style="padding:80px 20px;text-align:center;color:#64748B;">⏳ 載入股價中...</div>';
+            container.innerHTML = '';
 
             try {
-                debugLog(`📡 抓取 ${stockCode} 股價 (使用 CORS 代理)`, 'info');
-
-                // 使用多個 CORS 代理備援
-                const proxies = [
-                    'https://api.allorigins.win/raw?url=',
-                    'https://corsproxy.io/?',
-                    'https://api.codetabs.com/v1/proxy?quest='
-                ];
-
-                const symbol = `${stockCode}.TW`;
-                const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=6mo&interval=1d`;
-
-                let data = null;
-                let usedProxy = null;
-
-                // 嘗試每個代理
-                for (const proxy of proxies) {
-                    try {
-                        debugLog(`🔄 嘗試代理: ${proxy.split('/')[2]}`, 'info');
-                        const proxyUrl = proxy + encodeURIComponent(yahooUrl);
-                        const response = await fetch(proxyUrl);
-
-                        if (response.ok) {
-                            const text = await response.text();
-                            data = JSON.parse(text);
-                            usedProxy = proxy.split('/')[2];
-                            debugLog(`✅ 代理成功: ${usedProxy}`, 'success');
-                            break;
-                        }
-                    } catch (e) {
-                        debugLog(`⚠️ 代理失敗: ${proxy.split('/')[2]}`, 'warning');
-                        continue;
-                    }
-                }
-
-                // 如果所有代理都失敗，嘗試 .TWO
-                if (!data) {
-                    debugLog('⚠️ .TW 失敗，嘗試 .TWO', 'warning');
-                    const twoUrl = yahooUrl.replace('.TW', '.TWO');
-                    for (const proxy of proxies) {
-                        try {
-                            const proxyUrl = proxy + encodeURIComponent(twoUrl);
-                            const response = await fetch(proxyUrl);
-                            if (response.ok) {
-                                const text = await response.text();
-                                data = JSON.parse(text);
-                                usedProxy = proxy.split('/')[2];
-                                debugLog(`✅ .TWO 成功: ${usedProxy}`, 'success');
-                                break;
-                            }
-                        } catch (e) {
-                            continue;
-                        }
-                    }
-                }
-
-                if (!data) {
-                    throw new Error('所有 CORS 代理均失敗');
-                }
-
-                const result = data.chart.result[0];
-                const timestamps = result.timestamp;
-                const quotes = result.indicators.quote[0];
-
-                const klines = timestamps.map((ts, i) => ({
-                    time: new Date(ts * 1000).toISOString().split('T')[0],
-                    open: quotes.open[i] || 0,
-                    high: quotes.high[i] || 0,
-                    low: quotes.low[i] || 0,
-                    close: quotes.close[i] || 0,
-                })).filter(k => k.close > 0);
-
-                debugLog(`✅ ${stockCode} 取得 ${klines.length} 筆`, 'success');
-
-                container.innerHTML = '';
-                const chart = LightweightCharts.createChart(container, {
-                    width: container.offsetWidth,
-                    height: 400,
-                    layout: { backgroundColor: '#FFFFFF', textColor: '#1E293B' },
-                    grid: { vertLines: { color: '#F0F0F0' }, horzLines: { color: '#F0F0F0' } },
-                    timeScale: { borderColor: '#E2E8F0', timeVisible: true },
-                    rightPriceScale: { borderColor: '#E2E8F0' }
+                new TradingView.widget({
+                    "autosize": true,
+                    "symbol": `TWSE:${stockCode}`,
+                    "interval": "D",
+                    "timezone": "Asia/Taipei",
+                    "theme": "light",
+                    "style": "1",
+                    "locale": "zh_TW",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "hide_side_toolbar": false,
+                    "allow_symbol_change": false,
+                    "container_id": containerId,
+                    "height": 500,
+                    "width": "100%"
                 });
 
-                const candlestickSeries = chart.addCandlestickSeries({
-                    upColor: '#EF4444',
-                    downColor: '#10B981',
-                    borderUpColor: '#EF4444',
-                    borderDownColor: '#10B981',
-                    wickUpColor: '#EF4444',
-                    wickDownColor: '#10B981'
-                });
-
-                candlestickSeries.setData(klines);
-
-                const markers = etfHistory
-                    .filter(r => ['首次出現', '增持', '減持', '出清'].includes(r.status))
-                    .map(r => ({
-                        time: r.date.replace(/\//g, '-'),
-                        position: (r.status === '減持' || r.status === '出清') ? 'aboveBar' : 'belowBar',
-                        color: (r.status === '減持' || r.status === '出清') ? '#EF4444' : '#10B981',
-                        shape: (r.status === '減持' || r.status === '出清') ? 'arrowDown' : 'arrowUp',
-                        text: `${r.status} ${r.count}張`
-                    }));
-
-                candlestickSeries.setMarkers(markers);
-
-                new ResizeObserver(() => chart.applyOptions({ width: container.offsetWidth })).observe(container);
-
-                debugLog(`🎉 ${stockCode} K 線完成 (via ${usedProxy})`, 'success');
+                debugLog(`✅ TradingView 圖表載入成功: ${stockCode}`, 'success');
             } catch (error) {
-                debugLog(`❌ ${stockCode} 失敗: ${error.message}`, 'error');
-                container.innerHTML = `<div style="padding:60px 20px;text-align:center;color:#856404;background:#FFF3CD;border:2px solid #FFC107;border-radius:12px;">
-                    ❌ 無法載入股價<br>
-                    <span style="font-size:13px;">${error.message}</span><br>
-                    <span style="font-size:12px;margin-top:8px;display:block;">建議：稍後重試或點擊其他股票</span>
+                debugLog(`❌ TradingView 錯誤: ${error.message}`, 'error');
+                container.innerHTML = `<div style="padding:60px 20px;text-align:center;color:#856404;background:#FFF3CD;border-radius:12px;">
+                    ⚠️ 圖表載入失敗<br><span style="font-size:13px;">${error.message}</span>
                 </div>`;
             }
         }
@@ -1746,7 +1751,39 @@
             const etfContents = etfList.map(etf => {
                 const data = holdings[etf];
                 const canvasId = `chart${stockCode}${etf}`.replace(/[^a-zA-Z0-9]/g, '');
-                const klineId = `kline${stockCode}${etf}`.replace(/[^a-zA-Z0-9]/g, '');
+                const tvId = `tradingview${stockCode}${etf}`.replace(/[^a-zA-Z0-9]/g, '');
+
+                // 計算最大獲利
+                const maxProfit = calculateMaxProfit(data.history);
+                let profitHTML = '';
+
+                if (maxProfit) {
+                    profitHTML = `
+                        <div class="profit-analysis">
+                            <h3>💰 區間獲利分析</h3>
+                            <div class="profit-grid">
+                                <div class="profit-item">
+                                    <div class="label">買入日期</div>
+                                    <div class="value">${maxProfit.buyDate}</div>
+                                    <div class="sub">${maxProfit.buyStatus}</div>
+                                </div>
+                                <div class="profit-item">
+                                    <div class="label">買入張數</div>
+                                    <div class="value">${maxProfit.buyCount}張</div>
+                                </div>
+                                <div class="profit-item">
+                                    <div class="label">賣出日期</div>
+                                    <div class="value">${maxProfit.sellDate}</div>
+                                    <div class="sub">${maxProfit.sellStatus}</div>
+                                </div>
+                                <div class="profit-item">
+                                    <div class="label">賣出張數</div>
+                                    <div class="value">${maxProfit.sellCount}張</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
 
                 return `
                     <div class="etf-content ${etf === firstETF ? 'active' : ''}" data-etf="${etf}">
@@ -1757,17 +1794,17 @@
                             <div class="modal-stat-card"><div class="label">歷史最低</div><div class="value danger">${data.min_count || 0}張</div><div class="sub">${data.min_count_date || ''}</div></div>
                         </div>
 
+                        ${profitHTML}
+
                         <div class="chart-container">
                             <h3>📈 持股變化趨勢</h3>
                             <canvas id="${canvasId}" style="width:100%;height:auto;max-height:300px;"></canvas>
                         </div>
 
                         <div class="chart-container">
-                            <h3>📊 股價走勢與 ETF 買賣點</h3>
-                            <div id="${klineId}" style="width:100%;height:400px;"></div>
-                            <div style="margin-top:10px;font-size:13px;color:#64748B;">
-                                <span style="color:#10B981;">▲ 綠色箭頭</span>：ETF 買進/增持
-                                <span style="color:#EF4444;margin-left:20px;">▼ 紅色箭頭</span>：ETF 賣出/減持
+                            <h3>📊 股價走勢圖 (TradingView)</h3>
+                            <div class="tradingview-widget-container">
+                                <div id="${tvId}"></div>
                             </div>
                         </div>
 
@@ -1783,7 +1820,7 @@
                                             <td style="color:${r.count_change > 0 ? 'var(--success)' : 'var(--danger)'};font-weight:800;">${r.count_change > 0 ? '+' : ''}${r.count_change}張</td>
                                             <td style="color:${r.weight_change > 0 ? 'var(--success)' : 'var(--danger)'};font-weight:700;">${r.weight_change > 0 ? '+' : ''}${r.weight_change}%</td>
                                             <td><span style="padding:4px 6px;border-radius:8px;font-size:10px;font-weight:700;background:${r.status === '首次出現' ? 'rgba(16,185,129,0.15)' : r.status === '出清' ? 'rgba(239,68,68,0.15)' : 'var(--bg-light)'};color:${r.status === '首次出現' ? 'var(--success)' : r.status === '出清' ? 'var(--danger)' : 'var(--text-light)'};">${r.status}</span></td>
-                        </tr>
+                                        </tr>
                                     `).join('')}
                                 </tbody>
                             </table>
@@ -1813,10 +1850,11 @@
 
             const firstData = holdings[firstETF];
             const firstCanvasId = `chart${stockCode}${firstETF}`.replace(/[^a-zA-Z0-9]/g, '');
+            const firstTvId = `tradingview${stockCode}${firstETF}`.replace(/[^a-zA-Z0-9]/g, '');
 
             setTimeout(() => {
                 drawTrendChart(firstCanvasId, firstData.history);
-                drawKlineChartFromAPI(stockCode, firstETF, firstData.history);
+                drawTradingViewChart(stockCode, firstETF, firstData.history, firstTvId);
             }, 100);
         }
 
@@ -1832,9 +1870,10 @@
                 const holdings = getETFHoldings(stock);
                 if (holdings[etfCode]) {
                     const canvasId = `chart${stockCode}${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
+                    const tvId = `tradingview${stockCode}${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
                     setTimeout(() => {
                         drawTrendChart(canvasId, holdings[etfCode].history);
-                        drawKlineChartFromAPI(stockCode, etfCode, holdings[etfCode].history);
+                        drawTradingViewChart(stockCode, etfCode, holdings[etfCode].history, tvId);
                     }, 100);
                 }
             }

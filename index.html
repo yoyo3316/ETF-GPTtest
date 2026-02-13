@@ -1152,7 +1152,6 @@
         let chartInstances = new Map();
         let latestDataDate = null;
 
-        // Debug 工具（修正無限遞迴問題）
         function debugLog(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString('zh-TW', { hour12: false });
             const logElement = document.getElementById('debugLog');
@@ -1166,8 +1165,7 @@
         }
 
         function toggleDebug() {
-            const panel = document.getElementById('debugPanel');
-            panel.classList.toggle('show');
+            document.getElementById('debugPanel').classList.toggle('show');
         }
 
         function getETFHoldings(stock) {
@@ -1580,6 +1578,7 @@
             chartInstances.set(canvasId, newChart);
         }
 
+        // 使用 CORS 代理的 K 線圖函數
         async function drawKlineChartFromAPI(stockCode, etfCode, etfHistory) {
             const containerId = `kline${stockCode}${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
             const container = document.getElementById(containerId);
@@ -1600,18 +1599,66 @@
             container.innerHTML = '<div style="padding:80px 20px;text-align:center;color:#64748B;">⏳ 載入股價中...</div>';
 
             try {
-                debugLog(`📡 抓取 ${stockCode} 股價`, 'info');
-                const symbol = `${stockCode}.TW`;
-                const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=6mo&interval=1d`;
-                let response = await fetch(url);
+                debugLog(`📡 抓取 ${stockCode} 股價 (使用 CORS 代理)`, 'info');
 
-                if (!response.ok) {
-                    debugLog(`⚠️ .TW 失敗，嘗試 .TWO`, 'warning');
-                    response = await fetch(url.replace('.TW', '.TWO'));
-                    if (!response.ok) throw new Error('API 請求失敗');
+                // 使用多個 CORS 代理備援
+                const proxies = [
+                    'https://api.allorigins.win/raw?url=',
+                    'https://corsproxy.io/?',
+                    'https://api.codetabs.com/v1/proxy?quest='
+                ];
+
+                const symbol = `${stockCode}.TW`;
+                const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=6mo&interval=1d`;
+
+                let data = null;
+                let usedProxy = null;
+
+                // 嘗試每個代理
+                for (const proxy of proxies) {
+                    try {
+                        debugLog(`🔄 嘗試代理: ${proxy.split('/')[2]}`, 'info');
+                        const proxyUrl = proxy + encodeURIComponent(yahooUrl);
+                        const response = await fetch(proxyUrl);
+
+                        if (response.ok) {
+                            const text = await response.text();
+                            data = JSON.parse(text);
+                            usedProxy = proxy.split('/')[2];
+                            debugLog(`✅ 代理成功: ${usedProxy}`, 'success');
+                            break;
+                        }
+                    } catch (e) {
+                        debugLog(`⚠️ 代理失敗: ${proxy.split('/')[2]}`, 'warning');
+                        continue;
+                    }
                 }
 
-                const data = await response.json();
+                // 如果所有代理都失敗，嘗試 .TWO
+                if (!data) {
+                    debugLog('⚠️ .TW 失敗，嘗試 .TWO', 'warning');
+                    const twoUrl = yahooUrl.replace('.TW', '.TWO');
+                    for (const proxy of proxies) {
+                        try {
+                            const proxyUrl = proxy + encodeURIComponent(twoUrl);
+                            const response = await fetch(proxyUrl);
+                            if (response.ok) {
+                                const text = await response.text();
+                                data = JSON.parse(text);
+                                usedProxy = proxy.split('/')[2];
+                                debugLog(`✅ .TWO 成功: ${usedProxy}`, 'success');
+                                break;
+                            }
+                        } catch (e) {
+                            continue;
+                        }
+                    }
+                }
+
+                if (!data) {
+                    throw new Error('所有 CORS 代理均失敗');
+                }
+
                 const result = data.chart.result[0];
                 const timestamps = result.timestamp;
                 const quotes = result.indicators.quote[0];
@@ -1661,11 +1708,13 @@
 
                 new ResizeObserver(() => chart.applyOptions({ width: container.offsetWidth })).observe(container);
 
-                debugLog(`🎉 ${stockCode} K 線完成`, 'success');
+                debugLog(`🎉 ${stockCode} K 線完成 (via ${usedProxy})`, 'success');
             } catch (error) {
                 debugLog(`❌ ${stockCode} 失敗: ${error.message}`, 'error');
                 container.innerHTML = `<div style="padding:60px 20px;text-align:center;color:#856404;background:#FFF3CD;border:2px solid #FFC107;border-radius:12px;">
-                    ❌ 無法載入股價<br><span style="font-size:13px;">${error.message}</span>
+                    ❌ 無法載入股價<br>
+                    <span style="font-size:13px;">${error.message}</span><br>
+                    <span style="font-size:12px;margin-top:8px;display:block;">建議：稍後重試或點擊其他股票</span>
                 </div>`;
             }
         }
@@ -1734,7 +1783,7 @@
                                             <td style="color:${r.count_change > 0 ? 'var(--success)' : 'var(--danger)'};font-weight:800;">${r.count_change > 0 ? '+' : ''}${r.count_change}張</td>
                                             <td style="color:${r.weight_change > 0 ? 'var(--success)' : 'var(--danger)'};font-weight:700;">${r.weight_change > 0 ? '+' : ''}${r.weight_change}%</td>
                                             <td><span style="padding:4px 6px;border-radius:8px;font-size:10px;font-weight:700;background:${r.status === '首次出現' ? 'rgba(16,185,129,0.15)' : r.status === '出清' ? 'rgba(239,68,68,0.15)' : 'var(--bg-light)'};color:${r.status === '首次出現' ? 'var(--success)' : r.status === '出清' ? 'var(--danger)' : 'var(--text-light)'};">${r.status}</span></td>
-                                        </tr>
+                        </tr>
                                     `).join('')}
                                 </tbody>
                             </table>

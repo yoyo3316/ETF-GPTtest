@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETF 持股追蹤 Pro - TradingView 版</title>
+    <title>ETF 持股追蹤 Pro - 完美版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://s3.tradingview.com/tv.js"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -45,6 +45,11 @@
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         body {
@@ -965,93 +970,118 @@
             font-weight: 600;
         }
 
-        /* 新增：區間最大獲利統計卡 */
+        /* 區間最大獲利分析 - 超大間距 */
         .profit-analysis {
             background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 26px;
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 50px;
             color: white;
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
             animation: slideIn 0.5s;
         }
 
         .profit-analysis h3 {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 800;
-            margin-bottom: 18px;
+            margin-bottom: 24px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .profit-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
         }
 
         .profit-item {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
-            padding: 16px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .profit-item .label {
-            font-size: 11px;
-            opacity: 0.9;
-            margin-bottom: 8px;
+            font-size: 13px;
+            opacity: 0.95;
+            margin-bottom: 12px;
             text-transform: uppercase;
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: 0.5px;
         }
 
         .profit-item .value {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 900;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .profit-item .sub {
-            font-size: 13px;
-            margin-top: 6px;
-            opacity: 0.85;
+            font-size: 15px;
+            margin-top: 10px;
+            opacity: 0.9;
+            font-weight: 600;
         }
 
+        .profit-highlight {
+            background: rgba(255, 255, 255, 0.25);
+            padding: 20px;
+            border-radius: 14px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .profit-highlight .label {
+            font-size: 14px;
+            margin-bottom: 12px;
+            opacity: 0.95;
+            font-weight: 800;
+        }
+
+        .profit-highlight .value {
+            font-size: 48px;
+            font-weight: 900;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .profit-highlight .sub {
+            font-size: 16px;
+            margin-top: 12px;
+            opacity: 0.9;
+        }
+
+        /* 圖表容器 - 超大間距 */
         .chart-container {
             background: var(--bg-light);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 26px;
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 60px;
         }
 
         .chart-container h3 {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 800;
-            margin-bottom: 18px;
+            margin-bottom: 24px;
             color: var(--text);
         }
 
-        .tradingview-widget-container {
-            width: 100%;
-            height: 500px;
-            border-radius: 12px;
-            overflow: hidden;
-            background: white;
-        }
-
+        /* 超大字體表格 */
         .modal-table {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
-            border: 2px solid var(--border);
-            border-radius: 16px;
+            border: 3px solid var(--primary);
+            border-radius: 20px;
             margin-bottom: 24px;
             margin-top: 4px;
         }
 
-        .modal-table::-webkit-scrollbar { width: 8px; }
-        .modal-table::-webkit-scrollbar-track { background: var(--bg-light); }
-        .modal-table::-webkit-scrollbar-thumb { background: var(--text-light); border-radius: 4px; }
+        .modal-table::-webkit-scrollbar { width: 12px; }
+        .modal-table::-webkit-scrollbar-track { background: var(--bg-light); border-radius: 10px; }
+        .modal-table::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
 
         .modal-table table {
             width: 100%;
@@ -1059,27 +1089,82 @@
         }
 
         .modal-table th {
-            background: #FFFFFF;
-            padding: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 24px 20px;
             text-align: left;
-            font-size: 13px;
-            color: #1E293B;
-            font-weight: 800;
+            font-size: 18px;
+            font-weight: 900;
             position: sticky;
             top: 0;
             text-transform: uppercase;
             z-index: 10;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
-            border-bottom: 2px solid #E2E8F0;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            border-bottom: 3px solid var(--primary);
+            letter-spacing: 0.5px;
         }
 
         .modal-table td {
-            padding: 16px;
-            border-bottom: 1px solid var(--border);
-            font-size: 15px;
+            padding: 24px 20px;
+            border-bottom: 2px solid var(--border);
+            font-size: 20px;
+            font-weight: 700;
         }
 
-        .modal-table tbody tr:hover { background: var(--bg-light); }
+        .modal-table tbody tr {
+            transition: all 0.3s;
+        }
+
+        .modal-table tbody tr:hover {
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.08) 0%, transparent 100%);
+            transform: scale(1.01);
+        }
+
+        .modal-table td:first-child {
+            font-weight: 900;
+            color: var(--primary);
+            font-size: 21px;
+        }
+
+        .modal-table .count-cell {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--text);
+        }
+
+        .modal-table .change-cell {
+            font-size: 21px;
+            font-weight: 900;
+        }
+
+        .modal-table .status-badge {
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 900;
+            display: inline-block;
+            text-align: center;
+            min-width: 90px;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-table .status-badge.new {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .modal-table .status-badge.delete {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+
+        .modal-table .status-badge.neutral {
+            background: var(--bg-light);
+            color: var(--text-light);
+            border: 2px solid var(--border);
+        }
 
         .close-btn { text-align: center; }
 
@@ -1091,6 +1176,22 @@
             text-align: center;
             padding: 40px 20px;
             font-size: 16px;
+        }
+
+        .kline-loading {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--primary);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .kline-loading::before {
+            content: "⏳";
+            font-size: 32px;
+            display: block;
+            margin-bottom: 12px;
+            animation: pulse 1.5s ease-in-out infinite;
         }
 
         @media (max-width: 768px) {
@@ -1107,7 +1208,10 @@
             .modal-content { margin: 0; border-radius: 0; min-height: 100vh; padding: 20px 16px; max-width: 100%; }
             .debug-panel { width: 90%; right: 5%; left: 5%; bottom: 10px; max-height: 250px; font-size: 11px; }
             .debug-toggle { right: 10px; bottom: 10px; padding: 10px 16px; font-size: 12px; }
-            .tradingview-widget-container { height: 400px; }
+            .modal-table td { font-size: 18px; padding: 20px 16px; }
+            .modal-table th { font-size: 16px; padding: 20px 16px; }
+            .chart-container { margin-bottom: 40px; padding: 24px; }
+            .profit-analysis { margin-bottom: 40px; padding: 24px; }
         }
     </style>
 </head>
@@ -1219,6 +1323,7 @@
         let currentWeekOffset = 0;
         let chartInstances = new Map();
         let latestDataDate = null;
+        let stockPriceCache = new Map();
 
         function debugLog(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString('zh-TW', { hour12: false });
@@ -1240,43 +1345,94 @@
             return stock.etfholdings || stock.etf_holdings || {};
         }
 
-        // 計算區間最大獲利
-        function calculateMaxProfit(history) {
-            if (!history || history.length < 2) return null;
+        // 計算區間最大獲利率（買入後的最高點漲幅）
+        async function calculateMaxProfit(stockCode, history, priceData) {
+            if (!history || history.length < 1) return null;
+            if (!priceData || priceData.length === 0) return null;
 
-            // 只考慮有買入/賣出動作的記錄
-            const trades = history.filter(r => ['首次出現', '增持', '減持', '出清'].includes(r.status));
-            if (trades.length < 2) return null;
+            // 找出首次買入記錄
+            const buyRecord = history.find(r => r.status === '首次出現');
+            if (!buyRecord) return null;
 
-            let maxProfit = 0;
-            let bestBuy = null;
-            let bestSell = null;
+            const buyDate = buyRecord.date.replace(/\//g, '-');
 
-            // 找出所有買入點
-            const buyPoints = trades.filter(r => ['首次出現', '增持'].includes(r.status));
-            // 找出所有賣出點
-            const sellPoints = trades.filter(r => ['減持', '出清'].includes(r.status));
+            // 找出買入日的股價
+            const buyPrice = priceData.find(p => p.date === buyDate);
+            if (!buyPrice) {
+                debugLog(`⚠️ 找不到 ${buyDate} 的股價`, 'warning');
+                return null;
+            }
 
-            if (buyPoints.length === 0 || sellPoints.length === 0) return null;
+            // 找出買入後的所有股價
+            const pricesAfterBuy = priceData.filter(p => p.date >= buyDate);
+            if (pricesAfterBuy.length === 0) return null;
 
-            // 取最早買入和最晚賣出
-            bestBuy = buyPoints[0];
-            bestSell = sellPoints[sellPoints.length - 1];
+            // 找出最高價
+            let maxPrice = buyPrice.close;
+            let maxPriceDate = buyDate;
+
+            for (const price of pricesAfterBuy) {
+                if (price.high > maxPrice) {
+                    maxPrice = price.high;
+                    maxPriceDate = price.date;
+                }
+            }
+
+            // 計算漲幅
+            const profitRate = ((maxPrice - buyPrice.close) / buyPrice.close * 100).toFixed(2);
 
             return {
-                buyDate: bestBuy.date,
-                sellDate: bestSell.date,
-                buyCount: bestBuy.count,
-                sellCount: bestSell.count,
-                buyStatus: bestBuy.status,
-                sellStatus: bestSell.status
+                buyDate: buyRecord.date,
+                buyPrice: buyPrice.close.toFixed(2),
+                buyCount: buyRecord.count,
+                maxDate: maxPriceDate.replace(/-/g, '/'),
+                maxPrice: maxPrice.toFixed(2),
+                profitRate: parseFloat(profitRate)
             };
+        }
+
+        // 從 FinMind 取得股價資料
+        async function fetchStockPrice(stockCode, startDate) {
+            const cacheKey = `${stockCode}_${startDate}`;
+            if (stockPriceCache.has(cacheKey)) {
+                return stockPriceCache.get(cacheKey);
+            }
+
+            try {
+                const apiUrl = 'https://api.finmindtrade.com/api/v4/data';
+                const params = new URLSearchParams({
+                    dataset: 'TaiwanStockPrice',
+                    data_id: stockCode,
+                    start_date: startDate.replace(/-/g, ''),
+                    token: ''
+                });
+
+                const response = await fetch(`${apiUrl}?${params}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                if (!data.data || data.data.length === 0) throw new Error('無股價資料');
+
+                const priceData = data.data.map(d => ({
+                    date: d.date,
+                    open: parseFloat(d.open),
+                    high: parseFloat(d.max),
+                    low: parseFloat(d.min),
+                    close: parseFloat(d.close)
+                }));
+
+                stockPriceCache.set(cacheKey, priceData);
+                return priceData;
+            } catch (error) {
+                debugLog(`❌ 股價抓取失敗 ${stockCode}: ${error.message}`, 'error');
+                return null;
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             debugLog('🚀 開始初始化...', 'success');
             debugLog(`Chart.js: ${typeof Chart}`, 'info');
-            debugLog(`TradingView: ${typeof TradingView}`, 'info');
+            debugLog(`LightweightCharts: ${typeof LightweightCharts}`, 'info');
 
             Promise.all([
                 fetch('./processed_etf_data.json').then(r => {
@@ -1679,52 +1835,113 @@
             chartInstances.set(canvasId, newChart);
         }
 
-        // 使用 TradingView Widget
-        function drawTradingViewChart(stockCode, etfCode, etfHistory, containerId) {
-            debugLog(`📊 載入 TradingView 圖表: ${stockCode}`, 'info');
-
+        async function drawKlineChartFromFinMind(stockCode, etfCode, etfHistory) {
+            const containerId = `kline${stockCode}${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
             const container = document.getElementById(containerId);
+
+            debugLog(`🎨 準備繪製 K 線: ${stockCode} (FinMind)`, 'info');
+
             if (!container) {
                 debugLog(`❌ 找不到容器: ${containerId}`, 'error');
                 return;
             }
 
-            if (typeof TradingView === 'undefined') {
-                debugLog('❌ TradingView 未載入', 'error');
-                container.innerHTML = '<div style="padding:80px 20px;text-align:center;color:#EF4444;">❌ TradingView 載入失敗</div>';
+            if (typeof LightweightCharts === 'undefined') {
+                debugLog('❌ LightweightCharts 未載入', 'error');
+                container.innerHTML = '<div style="padding:80px 20px;text-align:center;color:#EF4444;background:#FEE;border-radius:12px;">❌ 圖表庫未載入</div>';
                 return;
             }
 
-            container.innerHTML = '';
+            container.innerHTML = '<div class="kline-loading">載入完整歷史股價中...</div>';
 
             try {
-                new TradingView.widget({
-                    "autosize": true,
-                    "symbol": `TWSE:${stockCode}`,
-                    "interval": "D",
-                    "timezone": "Asia/Taipei",
-                    "theme": "light",
-                    "style": "1",
-                    "locale": "zh_TW",
-                    "toolbar_bg": "#f1f3f6",
-                    "enable_publishing": false,
-                    "hide_side_toolbar": false,
-                    "allow_symbol_change": false,
-                    "container_id": containerId,
-                    "height": 500,
-                    "width": "100%"
+                const sortedHistory = [...etfHistory].sort((a, b) => a.date.localeCompare(b.date));
+                const startDate = sortedHistory[0]?.date.replace(/\//g, '-') || '2024-01-01';
+
+                debugLog(`📡 抓取 ${stockCode} 完整歷史股價 (${startDate})`, 'info');
+
+                const priceData = await fetchStockPrice(stockCode, startDate);
+
+                if (!priceData || priceData.length === 0) {
+                    throw new Error('無股價資料');
+                }
+
+                const klines = priceData.map(d => ({
+                    time: d.date,
+                    open: d.open,
+                    high: d.high,
+                    low: d.low,
+                    close: d.close
+                })).filter(k => k.close > 0);
+
+                debugLog(`✅ ${stockCode} 取得 ${klines.length} 筆歷史資料`, 'success');
+
+                container.innerHTML = '';
+                const chart = LightweightCharts.createChart(container, {
+                    width: container.offsetWidth,
+                    height: 500,
+                    layout: { 
+                        backgroundColor: '#FFFFFF', 
+                        textColor: '#1E293B',
+                        fontSize: 14,
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei"'
+                    },
+                    grid: { 
+                        vertLines: { color: 'rgba(79, 70, 229, 0.1)' }, 
+                        horzLines: { color: 'rgba(79, 70, 229, 0.1)' } 
+                    },
+                    timeScale: { 
+                        borderColor: '#E2E8F0', 
+                        timeVisible: true,
+                        secondsVisible: false
+                    },
+                    rightPriceScale: { 
+                        borderColor: '#E2E8F0',
+                        scaleMargins: { top: 0.1, bottom: 0.2 }
+                    },
+                    crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
                 });
 
-                debugLog(`✅ TradingView 圖表載入成功: ${stockCode}`, 'success');
+                const candlestickSeries = chart.addCandlestickSeries({
+                    upColor: '#EF4444',
+                    downColor: '#10B981',
+                    borderUpColor: '#EF4444',
+                    borderDownColor: '#10B981',
+                    wickUpColor: '#EF4444',
+                    wickDownColor: '#10B981'
+                });
+
+                candlestickSeries.setData(klines);
+
+                const importantTrades = etfHistory
+                    .filter(r => ['首次出現', '出清'].includes(r.status))
+                    .map(r => ({
+                        time: r.date.replace(/\//g, '-'),
+                        position: r.status === '出清' ? 'aboveBar' : 'belowBar',
+                        color: r.status === '出清' ? '#EF4444' : '#10B981',
+                        shape: r.status === '出清' ? 'arrowDown' : 'arrowUp',
+                        text: `${r.status}`
+                    }));
+
+                candlestickSeries.setMarkers(importantTrades);
+
+                new ResizeObserver(() => {
+                    chart.applyOptions({ width: container.offsetWidth });
+                }).observe(container);
+
+                return priceData;
             } catch (error) {
-                debugLog(`❌ TradingView 錯誤: ${error.message}`, 'error');
-                container.innerHTML = `<div style="padding:60px 20px;text-align:center;color:#856404;background:#FFF3CD;border-radius:12px;">
-                    ⚠️ 圖表載入失敗<br><span style="font-size:13px;">${error.message}</span>
+                debugLog(`❌ ${stockCode} FinMind 失敗: ${error.message}`, 'error');
+                container.innerHTML = `<div style="padding:60px 20px;text-align:center;color:#856404;background:#FFF3CD;border:2px solid #FFC107;border-radius:12px;">
+                    ⚠️ 無法載入股價資料<br>
+                    <span style="font-size:14px;margin-top:8px;display:block;">${error.message}</span><br>
+                    <span style="font-size:13px;margin-top:8px;display:block;color:#64748B;">可能原因：股票代碼不存在或 API 暫時無法使用</span>
                 </div>`;
+                return null;
             }
         }
 
-        function showStockDetail(stockCode, preferredETF = null) {
+        async function showStockDetail(stockCode, preferredETF = null) {
             debugLog(`🔍 顯示: ${stockCode}`, 'info');
 
             const stock = stockData[stockCode];
@@ -1751,39 +1968,7 @@
             const etfContents = etfList.map(etf => {
                 const data = holdings[etf];
                 const canvasId = `chart${stockCode}${etf}`.replace(/[^a-zA-Z0-9]/g, '');
-                const tvId = `tradingview${stockCode}${etf}`.replace(/[^a-zA-Z0-9]/g, '');
-
-                // 計算最大獲利
-                const maxProfit = calculateMaxProfit(data.history);
-                let profitHTML = '';
-
-                if (maxProfit) {
-                    profitHTML = `
-                        <div class="profit-analysis">
-                            <h3>💰 區間獲利分析</h3>
-                            <div class="profit-grid">
-                                <div class="profit-item">
-                                    <div class="label">買入日期</div>
-                                    <div class="value">${maxProfit.buyDate}</div>
-                                    <div class="sub">${maxProfit.buyStatus}</div>
-                                </div>
-                                <div class="profit-item">
-                                    <div class="label">買入張數</div>
-                                    <div class="value">${maxProfit.buyCount}張</div>
-                                </div>
-                                <div class="profit-item">
-                                    <div class="label">賣出日期</div>
-                                    <div class="value">${maxProfit.sellDate}</div>
-                                    <div class="sub">${maxProfit.sellStatus}</div>
-                                </div>
-                                <div class="profit-item">
-                                    <div class="label">賣出張數</div>
-                                    <div class="value">${maxProfit.sellCount}張</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
+                const klineId = `kline${stockCode}${etf}`.replace(/[^a-zA-Z0-9]/g, '');
 
                 return `
                     <div class="etf-content ${etf === firstETF ? 'active' : ''}" data-etf="${etf}">
@@ -1794,7 +1979,13 @@
                             <div class="modal-stat-card"><div class="label">歷史最低</div><div class="value danger">${data.min_count || 0}張</div><div class="sub">${data.min_count_date || ''}</div></div>
                         </div>
 
-                        ${profitHTML}
+                        <div class="profit-analysis" id="profit${stockCode}${etf}">
+                            <h3>💰 區間最大獲利分析</h3>
+                            <div style="text-align:center;padding:40px;color:rgba(255,255,255,0.8);">
+                                <div style="font-size:32px;margin-bottom:12px;">⏳</div>
+                                <div>正在計算中...</div>
+                            </div>
+                        </div>
 
                         <div class="chart-container">
                             <h3>📈 持股變化趨勢</h3>
@@ -1802,26 +1993,46 @@
                         </div>
 
                         <div class="chart-container">
-                            <h3>📊 股價走勢圖 (TradingView)</h3>
-                            <div class="tradingview-widget-container">
-                                <div id="${tvId}"></div>
+                            <h3>📊 股價走勢與 ETF 買賣點</h3>
+                            <div id="${klineId}" style="width:100%;height:500px;"></div>
+                            <div style="margin-top:16px;font-size:15px;color:#64748B;text-align:center;">
+                                <span style="color:#10B981;font-weight:700;">▲ 綠色箭頭</span>：ETF 首次買入
+                                <span style="color:#EF4444;margin-left:24px;font-weight:700;">▼ 紅色箭頭</span>：ETF 完全賣出
                             </div>
                         </div>
 
                         <div class="modal-table">
                             <table>
-                                <thead><tr><th>日期</th><th>張數</th><th>權重</th><th>張數變動</th><th>權重變動</th><th>狀態</th></tr></thead>
+                                <thead>
+                                    <tr>
+                                        <th>日期</th>
+                                        <th>張數</th>
+                                        <th>權重</th>
+                                        <th>張數變動</th>
+                                        <th>權重變動</th>
+                                        <th>狀態</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
-                                    ${(data.history || []).slice().reverse().map(r => `
+                                    ${(data.history || []).slice().reverse().map(r => {
+                                        const statusClass = r.status === '首次出現' ? 'new' : r.status === '出清' ? 'delete' : 'neutral';
+                                        return `
                                         <tr>
-                                            <td style="font-weight:700;">${r.date}</td>
-                                            <td style="font-weight:800;">${r.count}張</td>
-                                            <td>${r.weight}%</td>
-                                            <td style="color:${r.count_change > 0 ? 'var(--success)' : 'var(--danger)'};font-weight:800;">${r.count_change > 0 ? '+' : ''}${r.count_change}張</td>
-                                            <td style="color:${r.weight_change > 0 ? 'var(--success)' : 'var(--danger)'};font-weight:700;">${r.weight_change > 0 ? '+' : ''}${r.weight_change}%</td>
-                                            <td><span style="padding:4px 6px;border-radius:8px;font-size:10px;font-weight:700;background:${r.status === '首次出現' ? 'rgba(16,185,129,0.15)' : r.status === '出清' ? 'rgba(239,68,68,0.15)' : 'var(--bg-light)'};color:${r.status === '首次出現' ? 'var(--success)' : r.status === '出清' ? 'var(--danger)' : 'var(--text-light)'};">${r.status}</span></td>
+                                            <td>${r.date}</td>
+                                            <td class="count-cell">${r.count}張</td>
+                                            <td style="font-size:19px;font-weight:700;">${r.weight}%</td>
+                                            <td class="change-cell" style="color:${r.count_change > 0 ? 'var(--success)' : r.count_change < 0 ? 'var(--danger)' : 'var(--text-light)'};">
+                                                ${r.count_change > 0 ? '+' : ''}${r.count_change}張
+                                            </td>
+                                            <td style="color:${r.weight_change > 0 ? 'var(--success)' : r.weight_change < 0 ? 'var(--danger)' : 'var(--text-light)'};font-size:19px;font-weight:800;">
+                                                ${r.weight_change > 0 ? '+' : ''}${r.weight_change}%
+                                            </td>
+                                            <td>
+                                                <span class="status-badge ${statusClass}">${r.status}</span>
+                                            </td>
                                         </tr>
-                                    `).join('')}
+                                        `;
+                                    }).join('')}
                                 </tbody>
                             </table>
                         </div>
@@ -1850,11 +2061,60 @@
 
             const firstData = holdings[firstETF];
             const firstCanvasId = `chart${stockCode}${firstETF}`.replace(/[^a-zA-Z0-9]/g, '');
-            const firstTvId = `tradingview${stockCode}${firstETF}`.replace(/[^a-zA-Z0-9]/g, '');
+            const firstKlineId = `kline${stockCode}${firstETF}`.replace(/[^a-zA-Z0-9]/g, '');
+            const profitId = `profit${stockCode}${firstETF}`;
 
-            setTimeout(() => {
+            setTimeout(async () => {
                 drawTrendChart(firstCanvasId, firstData.history);
-                drawTradingViewChart(stockCode, firstETF, firstData.history, firstTvId);
+                const priceData = await drawKlineChartFromFinMind(stockCode, firstETF, firstData.history);
+
+                if (priceData) {
+                    const maxProfit = await calculateMaxProfit(stockCode, firstData.history, priceData);
+                    const profitContainer = document.getElementById(profitId);
+
+                    if (maxProfit && profitContainer) {
+                        const profitColor = maxProfit.profitRate >= 0 ? '#10B981' : '#EF4444';
+                        profitContainer.innerHTML = `
+                            <h3>💰 區間最大獲利分析（買入後最高點）</h3>
+                            <div class="profit-grid">
+                                <div class="profit-item">
+                                    <div class="label">買入日期</div>
+                                    <div class="value">${maxProfit.buyDate}</div>
+                                    <div class="sub">首次出現</div>
+                                </div>
+                                <div class="profit-item">
+                                    <div class="label">買入價格</div>
+                                    <div class="value">$${maxProfit.buyPrice}</div>
+                                    <div class="sub">${maxProfit.buyCount}張</div>
+                                </div>
+                                <div class="profit-item">
+                                    <div class="label">最高點日期</div>
+                                    <div class="value">${maxProfit.maxDate}</div>
+                                    <div class="sub">區間最高價</div>
+                                </div>
+                                <div class="profit-item">
+                                    <div class="label">最高價格</div>
+                                    <div class="value">$${maxProfit.maxPrice}</div>
+                                    <div class="sub">+$${(maxProfit.maxPrice - maxProfit.buyPrice).toFixed(2)}</div>
+                                </div>
+                            </div>
+                            <div class="profit-highlight">
+                                <div class="label">區間最大漲幅</div>
+                                <div class="value" style="color:${profitColor};">${maxProfit.profitRate > 0 ? '+' : ''}${maxProfit.profitRate}%</div>
+                                <div class="sub">從買入價到最高價的漲跌幅</div>
+                            </div>
+                        `;
+                        debugLog(`📊 ${stockCode} 最大獲利: ${maxProfit.profitRate}%`, 'success');
+                    } else if (profitContainer) {
+                        profitContainer.innerHTML = `
+                            <h3>💰 區間最大獲利分析</h3>
+                            <div style="text-align:center;padding:40px;color:rgba(255,255,255,0.8);">
+                                <div style="font-size:32px;margin-bottom:12px;">ℹ️</div>
+                                <div>無法計算（缺少買入記錄或股價資料）</div>
+                            </div>
+                        `;
+                    }
+                }
             }, 100);
         }
 
@@ -1870,10 +2130,51 @@
                 const holdings = getETFHoldings(stock);
                 if (holdings[etfCode]) {
                     const canvasId = `chart${stockCode}${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
-                    const tvId = `tradingview${stockCode}${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
-                    setTimeout(() => {
+                    const klineId = `kline${stockCode}${etfCode}`.replace(/[^a-zA-Z0-9]/g, '');
+                    const profitId = `profit${stockCode}${etfCode}`;
+
+                    setTimeout(async () => {
                         drawTrendChart(canvasId, holdings[etfCode].history);
-                        drawTradingViewChart(stockCode, etfCode, holdings[etfCode].history, tvId);
+                        const priceData = await drawKlineChartFromFinMind(stockCode, etfCode, holdings[etfCode].history);
+
+                        if (priceData) {
+                            const maxProfit = await calculateMaxProfit(stockCode, holdings[etfCode].history, priceData);
+                            const profitContainer = document.getElementById(profitId);
+
+                            if (maxProfit && profitContainer) {
+                                const profitColor = maxProfit.profitRate >= 0 ? '#10B981' : '#EF4444';
+                                profitContainer.innerHTML = `
+                                    <h3>💰 區間最大獲利分析（買入後最高點）</h3>
+                                    <div class="profit-grid">
+                                        <div class="profit-item">
+                                            <div class="label">買入日期</div>
+                                            <div class="value">${maxProfit.buyDate}</div>
+                                            <div class="sub">首次出現</div>
+                                        </div>
+                                        <div class="profit-item">
+                                            <div class="label">買入價格</div>
+                                            <div class="value">$${maxProfit.buyPrice}</div>
+                                            <div class="sub">${maxProfit.buyCount}張</div>
+                                        </div>
+                                        <div class="profit-item">
+                                            <div class="label">最高點日期</div>
+                                            <div class="value">${maxProfit.maxDate}</div>
+                                            <div class="sub">區間最高價</div>
+                                        </div>
+                                        <div class="profit-item">
+                                            <div class="label">最高價格</div>
+                                            <div class="value">$${maxProfit.maxPrice}</div>
+                                            <div class="sub">+$${(maxProfit.maxPrice - maxProfit.buyPrice).toFixed(2)}</div>
+                                        </div>
+                                    </div>
+                                    <div class="profit-highlight">
+                                        <div class="label">區間最大漲幅</div>
+                                        <div class="value" style="color:${profitColor};">${maxProfit.profitRate > 0 ? '+' : ''}${maxProfit.profitRate}%</div>
+                                        <div class="sub">從買入價到最高價的漲跌幅</div>
+                                    </div>
+                                `;
+                            }
+                        }
                     }, 100);
                 }
             }

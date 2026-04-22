@@ -1508,12 +1508,18 @@
         let latestDataDate = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            fetch('./data.json')
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            // 同時抓取兩個 JSON 檔（對應 GitHub repo 的檔名）
+            Promise.all([
+                fetch('./processed_etf_data.json').then(r => {
+                    if (!r.ok) throw new Error(`processed_etf_data.json 載入失敗 (HTTP ${r.status})`);
+                    return r.json();
+                }),
+                fetch('./stock_history_data.json').then(r => {
+                    if (!r.ok) throw new Error(`stock_history_data.json 載入失敗 (HTTP ${r.status})`);
                     return r.json();
                 })
-                .then(({ processed, stock }) => {
+            ])
+                .then(([processed, stock]) => {
                     processedData = processed;
                     stockData = stock;
 

@@ -1426,10 +1426,7 @@
 
         <div id="dashboardMode" class="content-section">
             <div class="etf-tabs" id="dashboardEtfTabs">
-                <button class="etf-tab active" data-etf="00981A">00981A 統一台股增長</button>
-                <button class="etf-tab" data-etf="00992A">00992A 群益科技創新</button>
-                <button class="etf-tab" data-etf="00980A">00980A 野村智慧優選</button>
-                <button class="etf-tab" data-etf="00982A">00982A 群益強棒</button>
+                <!-- 動態產生 -->
             </div>
 
             <div class="week-nav">
@@ -1449,10 +1446,7 @@
             </h3>
             
             <div class="etf-tabs" id="etfTabs">
-                <button class="etf-tab active" data-etf="00981A">00981A 統一台股增長</button>
-                <button class="etf-tab" data-etf="00992A">00992A 群益科技創新</button>
-                <button class="etf-tab" data-etf="00980A">00980A 野村智慧優選</button>
-                <button class="etf-tab" data-etf="00982A">00982A 群益強棒</button>
+                <!-- 動態產生 -->
             </div>
 
             <div id="changesGrid" class="changes-grid"></div>
@@ -1469,10 +1463,7 @@
                     <div class="date-input-group">
                         <label>ETF基金</label>
                         <select id="historyETF">
-                            <option value="00981A">00981A 統一台股增長</option>
-                            <option value="00992A">00992A 群益科技創新</option>
-                            <option value="00980A">00980A 野村智慧優選</option>
-                            <option value="00982A">00982A 群益強棒</option>
+                            <!-- 動態產生 -->
                         </select>
                     </div>
                     <button class="btn" onclick="loadHistoryData()">🔍 查詢</button>
@@ -1500,9 +1491,9 @@
         let stockData = {};
         let processedData = {};
         let allDates = [];
-        let currentETF = '00981A';
+        let currentETF = null;
         let currentMode = 'dashboard';
-        let dashboardETF = '00981A';
+        let dashboardETF = null;
         let currentWeekOffset = 0;
         let chartInstances = new Map();
         let latestDataDate = null;
@@ -1547,6 +1538,7 @@
                     }
 
                     currentWeekOffset = 0;
+                    buildETFTabs();
                     renderCalendar();
                     renderChanges();
 
@@ -1678,6 +1670,7 @@
         }
 
         function renderCalendar() {
+            if (!dashboardETF) return;
             const weekRange = getWeekRange(currentWeekOffset);
             
             document.getElementById('weekRange').textContent = 
@@ -1847,6 +1840,7 @@
         }
 
         function renderChanges() {
+            if (!currentETF) return;
             const data = processedData[currentETF];
             if (!data || !data.daily_changes || data.daily_changes.length === 0) {
                 document.getElementById('changesGrid').innerHTML = '<p class="no-data">本日無異動記錄</p>';
@@ -2340,6 +2334,60 @@
                 renderCalendar();
             }
         });
-    </script>
+    
+        // ── 動態建立所有 ETF 頁籤與下拉選單 ──────────────────────────────
+        // 自訂排序：優先顯示清單內的 ETF（依序），其餘按代碼字母排序附在後面
+        const ETF_ORDER = ['00981A', '00992A', '00980A', '00982A'];
+
+        function buildETFTabs() {
+            const allEntries = Object.entries(processedData).map(([code, data]) => ({
+                code,
+                name: data.name || data.etf_name || code
+            }));
+
+            // 依 ETF_ORDER 排序：在清單內的照順序，不在清單的按代碼排序附後
+            allEntries.sort((a, b) => {
+                const ai = ETF_ORDER.indexOf(a.code);
+                const bi = ETF_ORDER.indexOf(b.code);
+                if (ai !== -1 && bi !== -1) return ai - bi;   // 兩者都在清單
+                if (ai !== -1) return -1;                      // 只有 a 在清單
+                if (bi !== -1) return 1;                       // 只有 b 在清單
+                return a.code.localeCompare(b.code);           // 都不在清單，字母排序
+            });
+
+            const etfEntries = allEntries;
+            if (etfEntries.length === 0) return;
+
+            // 設定預設 ETF（取第一筆）
+            currentETF   = etfEntries[0].code;
+            dashboardETF = etfEntries[0].code;
+
+            // helper: 產生 button HTML
+            const makeBtn = (code, name, isFirst) =>
+                `<button class="etf-tab${isFirst ? ' active' : ''}" data-etf="${code}">${code} ${name}</button>`;
+
+            // Dashboard 頁籤
+            const dashTabs = document.getElementById('dashboardEtfTabs');
+            if (dashTabs) {
+                dashTabs.innerHTML = etfEntries.map((e, i) => makeBtn(e.code, e.name, i === 0)).join('\n');
+            }
+
+            // 最新異動頁籤
+            const changeTabs = document.getElementById('etfTabs');
+            if (changeTabs) {
+                changeTabs.innerHTML = etfEntries.map((e, i) => makeBtn(e.code, e.name, i === 0)).join('\n');
+            }
+
+            // 歷史查詢 select
+            const histSelect = document.getElementById('historyETF');
+            if (histSelect) {
+                histSelect.innerHTML = etfEntries.map(e =>
+                    `<option value="${e.code}">${e.code} ${e.name}</option>`
+                ).join('\n');
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────
+
+        </script>
 </body>
 </html>

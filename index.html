@@ -51961,6 +51961,33 @@ function initSheetSwipe(modal){
 let _mgAllResults   = null;   // 全部計算結果快取
 let _mgLoading      = false;  // 防止重複點擊
 const _priceCache   = {};     // { "code|startDate|endDate": priceArray }
+let _mgRateLimited = false;   // API 已達速率上限旗標
+
+// ── localStorage 持久快取工具 ─────────────────────────────────────────
+const _LS_PREFIX = 'mgPx_';
+const _LS_TTL    = 86400000 * 3; // 3 天過期
+
+function _lsGet(key) {
+  try {
+    const raw = localStorage.getItem(_LS_PREFIX + key);
+    if (!raw) return undefined;
+    const { d, t } = JSON.parse(raw);
+    if (Date.now() - t > _LS_TTL) { localStorage.removeItem(_LS_PREFIX + key); return undefined; }
+    return d;
+  } catch { return undefined; }
+}
+function _lsSet(key, data) {
+  try { localStorage.setItem(_LS_PREFIX + key, JSON.stringify({ d: data, t: Date.now() })); }
+  catch (e) { /* localStorage 已滿時略過 */ }
+}
+function _lsClear() {
+  Object.keys(localStorage)
+    .filter(k => k.startsWith(_LS_PREFIX))
+    .forEach(k => localStorage.removeItem(k));
+}
+function _lsCount() {
+  return Object.keys(localStorage).filter(k => k.startsWith(_LS_PREFIX)).length;
+}
 
 // ── 工具函式 ──────────────────────────────────────────────────────────
 function _mgToISO(d) {
@@ -52024,10 +52051,22 @@ function _mgExtractPeriods() {
   return periods;
 }
 
-// ── 2. 呼叫 FinMind API（直接前端呼叫，不需 token）───────────────────
+// ── 2. 呼叫 FinMind API（含 localStorage 持久快取 + 速率上限偵測）──
 async function _mgFetchPrices(code, startDate, endDate) {
   const key = `${code}|${startDate}|${endDate}`;
+
+  // ① 優先讀 in-memory 快取
   if (_priceCache[key] !== undefined) return _priceCache[key];
+
+  // ② 再讀 localStorage 快取（跨 session 持久）
+  const cached = _lsGet(key);
+  if (cached !== undefined) {
+    _priceCache[key] = cached;
+    return cached;
+  }
+
+  // ③ 已達速率上限 → 跳過 API，回傳 null 代表「缺少」
+  if (_mgRateLimited) return null;
 
   try {
     const today = new Date().toISOString().slice(0, 10);
@@ -52039,11 +52078,27 @@ async function _mgFetchPrices(code, startDate, endDate) {
       end_date: endDate || today
     });
     if (token) params.set('token', token);
+
     const res = await fetch(`https://api.finmindtrade.com/api/v4/data?${params}`);
+
+    // HTTP 速率上限
+    if (res.status === 402 || res.status === 429) {
+      _mgRateLimited = true;
+      return null;
+    }
     if (!res.ok) { _priceCache[key] = []; return []; }
+
     const json = await res.json();
-    const data = (json.status === 200 && Array.isArray(json.data)) ? json.data : [];
+
+    // FinMind 應用層速率上限（HTTP 200 但 status≠200 或含 limit 訊息）
+    if (json.status !== 200 || (typeof json.msg === 'string' && /over|limit|quota/i.test(json.msg))) {
+      _mgRateLimited = true;
+      return null;
+    }
+
+    const data = (Array.isArray(json.data)) ? json.data : [];
     _priceCache[key] = data;
+    _lsSet(key, data);  // 寫入 localStorage
     return data;
   } catch {
     _priceCache[key] = [];
@@ -52051,19 +52106,18 @@ async function _mgFetchPrices(code, startDate, endDate) {
   }
 }
 
-// ── 3. 計算單一持股區間的最大漲幅 ─────────────────────────────────────
+// ── 3. 計算單一持股區間的最大漲幅（null = 速率上限跳過）──────────────
 async function _mgComputeGain(period) {
   const startISO = _mgToISO(period.buyDate);
   const endISO   = period.sellDate ? _mgToISO(period.sellDate) : new Date().toISOString().slice(0, 10);
   const prices   = await _mgFetchPrices(period.code, startISO, endISO);
 
-  if (!prices.length) return null;
+  if (prices === null) return { _skipped: true, ...period }; // 速率上限
+  if (!prices.length)  return null;                          // 無資料
 
-  // 買進價用第一交易日開盤價（或收盤價 fallback）
   const buyPrice = prices[0].open || prices[0].close;
   if (!buyPrice) return null;
 
-  // 期間最高用每日最高價 (max 欄位)
   let peakPrice = buyPrice, peakDate = prices[0].date;
   for (const p of prices) {
     const hi = p.max || p.close || 0;
@@ -52076,38 +52130,85 @@ async function _mgComputeGain(period) {
   return { ...period, buyPrice, peakPrice, gainPct, peakDate, days };
 }
 
-// ── 4. 主載入函式 ──────────────────────────────────────────────────────
+// ── 4. 主載入函式（含 localStorage 快取 + 速率上限偵測）──────────────
 async function startLoadMaxGain() {
   if (_mgLoading) return;
-  _mgLoading = true;
+  _mgLoading     = true;
+  _mgRateLimited = false;
 
   const btn     = document.getElementById('mgLoadBtn');
   const content = document.getElementById('maxGainContent');
   if (!btn || !content) { _mgLoading = false; console.error('[MaxGain] DOM elements not found'); return; }
-  btn.disabled  = true;
+  btn.disabled    = true;
   btn.textContent = '⏳ 載入中，請稍候...';
 
-  // 清除快取重新計算
+  // 只清 in-memory，保留 localStorage
   Object.keys(_priceCache).forEach(k => delete _priceCache[k]);
   _mgAllResults = null;
 
-  const periods = _mgExtractPeriods();
-  const total   = periods.length;
-  const results = [];
+  const periods  = _mgExtractPeriods();
+  const total    = periods.length;
+  const results  = [];
+  let successCount = 0, skippedCount = 0;
 
-  content.innerHTML = `<div class="no-data" id="mgProgress">🔄 正在從 FinMind 取得股價資料… 0 / ${total}<br><small style="opacity:0.7">免費版無需 token，但請求較慢，請耐心等候</small></div>`;
+  // 計算目前 localStorage 快取命中數
+  const cachedCount = periods.filter(p => {
+    const s = _mgToISO(p.buyDate);
+    const e = p.sellDate ? _mgToISO(p.sellDate) : new Date().toISOString().slice(0, 10);
+    return _lsGet(`${p.code}|${s}|${e}`) !== undefined;
+  }).length;
 
-  // 每批 4 支平行請求，降低 rate-limit 風險
+  const hasToken = !!(document.getElementById('mgToken')?.value || '').trim();
+  const limitTip = hasToken ? '🔑 Token 模式：每小時 600 次' : '⚠️ 未輸入 Token：每小時 300 次';
+
+  content.innerHTML = `<div class="no-data" id="mgProgress">
+    ⏳ 載入中… 0 / ${total}
+    <br><small style="opacity:0.7">💾 本機快取 ${cachedCount} 筆（免 API）・${limitTip}</small>
+  </div>`;
+
   const BATCH = 4;
   for (let i = 0; i < periods.length; i += BATCH) {
-    const batch   = periods.slice(i, i + BATCH);
+    const batch    = periods.slice(i, i + BATCH);
     const batchRes = await Promise.all(batch.map(_mgComputeGain));
-    batchRes.forEach(r => { if (r) results.push(r); });
+
+    batchRes.forEach(r => {
+      if (r?._skipped) skippedCount++;
+      else if (r)      { results.push(r); successCount++; }
+    });
+
     const prog = document.getElementById('mgProgress');
-    if (prog) prog.innerHTML = `🔄 正在從 FinMind 取得股價資料… ${Math.min(i + BATCH, total)} / ${total}<br><small style="opacity:0.7">免費版無需 token，但請求較慢，請耐心等候</small>`;
-    // 短暫延遲避免 rate limit
-    await new Promise(r => setTimeout(r, 120));
+    if (prog) {
+      const done = Math.min(i + BATCH, total);
+      if (_mgRateLimited) {
+        prog.innerHTML = `⚠️ <b>API 已達速率上限，剩餘請求跳過</b>
+          <br><small style="color:#E11D48;font-weight:700">
+            ✅ 已取得 ${successCount} 筆 &nbsp;❌ 缺少 ${total - successCount} 筆
+          </small>`;
+      } else {
+        prog.innerHTML = `⏳ 載入中… ${done} / ${total}
+          <br><small style="opacity:0.7">💾 本機快取 ${cachedCount} 筆（免 API）・${limitTip}</small>`;
+      }
+    }
+    if (!_mgRateLimited) await new Promise(r => setTimeout(r, 120));
   }
+
+  // 速率上限警告橫幅（插入 content 前方）
+  let bannerHTML = '';
+  if (skippedCount > 0) {
+    const lsTotal = _lsCount();
+    bannerHTML = `
+      <div style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:12px;
+                  padding:14px 18px;margin-bottom:16px;font-size:0.88em;color:#991B1B;">
+        ⚠️ <b>API 速率上限</b>，本次共 <b>${total}</b> 筆持股區間：<br>
+        ✅ 成功（含快取）<b>${successCount}</b> 筆 &nbsp;
+        ❌ 缺少 <b>${skippedCount}</b> 筆<br>
+        <span style="opacity:0.8;font-size:0.95em">
+          💡 缺少的 ${skippedCount} 筆已記錄，<b>下次點擊「載入排行」將自動補齊</b>（已快取 ${lsTotal} 筆，下次直接讀取）
+          ${hasToken ? '' : '<br>📌 輸入 FinMind Token 可提升上限至 600 次/小時'}
+        </span>
+      </div>`;
+  }
+  content.innerHTML = bannerHTML;
 
   results.sort((a, b) => b.gainPct - a.gainPct);
   _mgAllResults = results;
@@ -52123,8 +52224,10 @@ async function startLoadMaxGain() {
 function clearMaxGainCache() {
   _mgAllResults = null;
   Object.keys(_priceCache).forEach(k => delete _priceCache[k]);
+  const lsTotal = _lsCount();
+  _lsClear();
   document.getElementById('maxGainContent').innerHTML =
-    '<div class="no-data">快取已清除，請點擊「載入排行」重新計算</div>';
+    `<div class="no-data">🗑️ 已清除快取（含 ${lsTotal} 筆本機資料），請點擊「載入排行」重新計算</div>`;
   document.getElementById('mgCount').textContent = '';
 }
 

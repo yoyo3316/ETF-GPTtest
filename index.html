@@ -287,27 +287,28 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
 .ranking-updated{font-size:13px;color:var(--text-light);text-align:right;margin-bottom:16px}
 .ranking-scroll{overflow-x:auto;border-radius:16px;box-shadow:0 4px 20px var(--shadow);-webkit-overflow-scrolling:touch}
 .ranking-table{width:100%;border-collapse:separate;border-spacing:0;min-width:420px}
-.ranking-table th{background:#0369A1;color:white;padding:10px 7px;font-size:12px;font-weight:700;text-align:center;white-space:nowrap;border-bottom:2px solid #0284C7}
-.ranking-table td{padding:9px 7px;border-bottom:1px solid var(--border);font-size:13px;text-align:center;background:white;transition:background 0.2s;white-space:nowrap;vertical-align:middle}
+.ranking-table th{background:#0369A1;color:white;padding:11px 8px;font-size:13px;font-weight:700;text-align:center;white-space:nowrap;border-bottom:2px solid #0284C7}
+.ranking-table td{padding:12px 8px;border-bottom:1px solid var(--border);font-size:15px;text-align:center;background:white;transition:background 0.2s;white-space:nowrap;vertical-align:middle}
 /* Sticky 排名欄 */
 .ranking-table th:nth-child(1),
-.ranking-table td:nth-child(1){position:sticky;left:0;z-index:4;width:40px;min-width:40px;max-width:40px;box-shadow:2px 0 5px rgba(0,0,0,0.12)}
+.ranking-table td:nth-child(1){position:sticky;left:0;z-index:4;width:44px;min-width:44px;max-width:44px;box-shadow:2px 0 5px rgba(0,0,0,0.12)}
 .ranking-table th:nth-child(1){background:#0369A1}
 .ranking-table td:nth-child(1){background:white}
 /* Sticky 代碼+名稱欄 */
 .ranking-table th:nth-child(2),
-.ranking-table td:nth-child(2){position:sticky;left:40px;z-index:4;text-align:left;width:90px;min-width:90px;max-width:90px;box-shadow:3px 0 6px rgba(0,0,0,0.1)}
+.ranking-table td:nth-child(2){position:sticky;left:44px;z-index:4;text-align:left;width:96px;min-width:96px;max-width:96px;box-shadow:3px 0 6px rgba(0,0,0,0.1)}
 .ranking-table th:nth-child(2){background:#0369A1}
 .ranking-table td:nth-child(2){background:white}
-.ranking-table tbody tr:hover td{background:var(--bg-light)}
+.ranking-table tbody tr:hover td{background:#EFF6FF}
 .ranking-table tbody tr:hover td:nth-child(1),
-.ranking-table tbody tr:hover td:nth-child(2){background:var(--bg-light)}
-.ranking-table tbody tr.tracked-etf td{background:rgba(3,105,161,0.04)}
+.ranking-table tbody tr:hover td:nth-child(2){background:#EFF6FF}
+/* tracked-etf: sticky 欄用完全不透明實色，非 sticky 欄可用淡色 */
+.ranking-table tbody tr.tracked-etf td{background:#EBF5FB}
 .ranking-table tbody tr.tracked-etf td:nth-child(1),
-.ranking-table tbody tr.tracked-etf td:nth-child(2){background:rgba(3,105,161,0.06)}
-.ranking-table tbody tr.tracked-etf:hover td{background:rgba(3,105,161,0.1)}
+.ranking-table tbody tr.tracked-etf td:nth-child(2){background:#E8F4FD}
+.ranking-table tbody tr.tracked-etf:hover td{background:#D6EAF8}
 .ranking-table tbody tr.tracked-etf:hover td:nth-child(1),
-.ranking-table tbody tr.tracked-etf:hover td:nth-child(2){background:rgba(3,105,161,0.1)}
+.ranking-table tbody tr.tracked-etf:hover td:nth-child(2){background:#D6EAF8}
 /* Maxgain table sticky cols */
 .mg-table-wrap{overflow-x:auto;border-radius:12px;box-shadow:0 4px 16px var(--shadow);-webkit-overflow-scrolling:touch}
 .mg-table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.92em;min-width:460px}
@@ -331,7 +332,7 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
 .ranking-table tbody tr:hover td{background:var(--bg-light)}
 .ranking-table tbody tr.tracked-etf td{background:rgba(3,105,161,0.04)}
 .ranking-table tbody tr.tracked-etf:hover td{background:rgba(3,105,161,0.1)}
-.rank-badge{display:inline-block;width:28px;height:28px;line-height:28px;border-radius:50%;font-size:13px;font-weight:800;text-align:center}
+.rank-badge{display:inline-block;width:32px;height:32px;line-height:32px;border-radius:50%;font-size:14px;font-weight:800;text-align:center}
 .rank-1{background:#FFD700;color:#7B5800}
 .rank-2{background:#C0C0C0;color:#444}
 .rank-3{background:#CD7F32;color:#fff}
@@ -339,8 +340,8 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
 .return-positive{color:#059669;font-weight:800}
 .return-negative{color:#E11D48;font-weight:800}
 .return-null{color:var(--text-light);font-size:12px}
-.tracked-tag{display:inline-block;background:linear-gradient(135deg,#0369A1,#0891B2);color:white;font-size:10px;font-weight:700;
-  padding:2px 7px;border-radius:6px;margin-left:6px;vertical-align:middle}
+.tracked-tag{display:inline-block;background:#0369A1;color:white;font-size:10px;font-weight:700;
+  padding:2px 5px;border-radius:5px;margin-left:4px;vertical-align:middle;white-space:nowrap}
 
 /* RWD */
 @media(max-width:768px){
@@ -430,7 +431,8 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
   .change-card{padding:18px}
   .change-code{font-size:20px}
   .change-name{font-size:14px}
-  .ranking-table th,.ranking-table td{padding:9px 6px;font-size:13px}
+  .ranking-table th{padding:10px 7px;font-size:13px}
+  .ranking-table td{padding:12px 7px;font-size:15px}
   .mg-table{font-size:0.95em}
   .mg-table th,.mg-table td{padding:9px 6px}
   /* Main nav cards bigger active highlight */
@@ -51615,7 +51617,7 @@ function renderRanking(){
   const fmtRet = v => {
     if(v==null) return '<span class="return-null">--</span>';
     const cls = v>0?'return-positive':v<0?'return-negative':'';
-    return `<span class="${cls}">${v>0?'+':''}${v.toFixed(2)}%</span>`;
+    return `<span class="${cls}" style="font-size:1em;font-weight:800">${v>0?'+':''}${v.toFixed(2)}%</span>`;
   };
   const rankBadge = r => {
     if(!r) return '<span class="rank-badge rank-other">--</span>';
@@ -51649,10 +51651,10 @@ function renderRanking(){
     html += `<tr class="${isTracked?'tracked-etf':''}">
       <td>${rankBadge(etf.rank)}</td>
       <td>
-        <div style="font-weight:800;color:var(--text);font-size:0.95em;line-height:1.3">
+        <div style="font-weight:800;color:var(--text);font-size:1em;line-height:1.4;white-space:nowrap">
           ${etf.code}${isTracked?'<span class="tracked-tag">追蹤中</span>':''}
         </div>
-        <div style="font-size:0.75em;color:var(--text-muted,#5B7A95);line-height:1.3;font-weight:600">${shortName}</div>
+        <div style="font-size:0.8em;color:var(--text-muted,#5B7A95);line-height:1.3;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:88px">${shortName}</div>
       </td>
       <td>${fmtRet(etf.return_1d)}</td>
       <td>${fmtRet(etf.return_1w)}</td>

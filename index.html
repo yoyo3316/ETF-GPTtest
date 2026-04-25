@@ -222,9 +222,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei
   color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;
   transition:all 0.2s;opacity:0.8}
 .reset-zoom-btn:hover{opacity:1;transform:translateY(-1px)}
-.chart-scrollbar-wrap{margin-top:10px;padding:0 2px}
-.chart-scrollbar-wrap label{display:block;font-size:11px;color:var(--text-light);margin-bottom:4px;font-weight:600;text-align:center}
-.chart-scrollbar-wrap input[type=range]{width:100%;height:6px;cursor:pointer;accent-color:var(--primary);border-radius:3px}
+
+/* ── Dual-handle range slider ── */
+.rs-wrap{margin-top:16px;padding:0 2px;user-select:none;-webkit-user-select:none}
+.rs-dates{display:flex;justify-content:space-between;font-size:11px;color:var(--primary);
+  font-weight:700;margin-bottom:6px;padding:0 10px}
+.rs-hint{text-align:center;font-size:11px;color:var(--text-light);margin-bottom:8px;font-weight:500}
+.rs-track{position:relative;height:40px;display:flex;align-items:center;padding:0 10px;cursor:pointer}
+.rs-track-bg{position:absolute;left:10px;right:10px;height:6px;background:var(--border);border-radius:3px}
+.rs-fill{position:absolute;height:6px;background:linear-gradient(90deg,var(--primary),var(--secondary));
+  border-radius:3px;cursor:grab;transition:opacity 0.15s}
+.rs-fill:hover{opacity:0.85}
+.rs-fill:active{cursor:grabbing}
+.rs-thumb{position:absolute;width:22px;height:22px;background:white;
+  border:3px solid var(--primary);border-radius:50%;cursor:grab;
+  box-shadow:0 2px 8px rgba(79,70,229,0.25);transform:translateX(-50%);
+  z-index:3;transition:box-shadow 0.15s,border-color 0.15s;top:50%;margin-top:-11px}
+.rs-thumb:hover,.rs-thumb.active{border-color:var(--secondary);
+  box-shadow:0 0 0 5px rgba(79,70,229,0.15),0 2px 12px rgba(79,70,229,0.3)}
+.rs-thumb:active,.rs-thumb.active{cursor:grabbing}
+.rs-thumb-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:8px;color:var(--primary);pointer-events:none;font-weight:900;letter-spacing:-1px}
+
+/* ── Mobile bottom-sheet modal ── */
+@keyframes slideUpSheet{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-drag-bar{display:none;justify-content:center;padding:14px 0 8px;cursor:pointer;touch-action:none}
+.sheet-drag-bar span{display:block;width:40px;height:5px;background:var(--border);border-radius:3px}
 
 /* Modal table */
 .modal-table{max-height:400px;overflow-y:auto;border:2px solid var(--border);border-radius:16px;margin-bottom:24px;margin-top:4px}
@@ -306,13 +329,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei
   .btn{width:100%}
   .summary-stats{grid-template-columns:repeat(2,1fr);gap:12px}
   .summary-card{padding:16px}
-  .modal-content{margin:0;border-radius:0;min-height:100vh;padding:20px 16px}
-  .modal-header h2{font-size:22px;padding-right:36px}
+  /* Mobile bottom-sheet */
+  .modal-overlay{padding:0;align-items:flex-end;display:flex}
+  .modal-content{margin:0;border-radius:24px 24px 0 0;min-height:auto;max-height:92vh;
+    overflow-y:auto;padding:0 16px 24px;animation:slideUpSheet 0.38s cubic-bezier(0.4,0,0.2,1);width:100%}
+  .sheet-drag-bar{display:flex}
+  .modal-header{padding:16px 0 14px;margin-bottom:16px}
+  .modal-header h2{font-size:20px;padding-right:36px}
   .modal-header p{font-size:13px}
-  .modal-close-btn{width:36px;height:36px;font-size:22px}
-  .chart-container{padding:18px;margin-bottom:18px}
-  .chart-container h3{font-size:17px;margin-bottom:14px}
-  .reset-zoom-btn{top:14px;right:14px;padding:5px 12px;font-size:12px}
+  .modal-close-btn{width:36px;height:36px;font-size:20px}
+  /* ETF tabs scroll horizontally */
+  .modal-etf-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    gap:8px;padding:0 0 14px;scrollbar-width:none}
+  .modal-etf-tabs::-webkit-scrollbar{display:none}
+  .modal-etf-tab{flex:0 0 auto;padding:10px 16px;font-size:13px;border-radius:10px;white-space:nowrap}
+  .modal-stats{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+  .modal-stat-card{padding:12px;border-radius:10px}
+  .modal-stat-card .label{font-size:11px;margin-bottom:6px}
+  .modal-stat-card .value{font-size:20px}
+  .modal-stat-card .sub{font-size:11px;margin-top:4px}
+  .chart-container{padding:16px;margin-bottom:16px}
+  .chart-container h3{font-size:16px;margin-bottom:10px}
+  .chart-hint{font-size:11px}
+  .reset-zoom-btn{top:12px;right:12px;padding:5px 10px;font-size:11px}
+  /* Range slider bigger touch targets on mobile */
+  .rs-track{height:52px}
+  .rs-thumb{width:28px;height:28px;margin-top:-14px}
+  .modal-table{max-height:280px;font-size:13px;overflow-x:hidden}
+  .modal-table table{width:100%;table-layout:fixed}
+  .modal-table th,.modal-table td{padding:10px 4px;font-size:11px;word-wrap:break-word}
+  .modal-table th:nth-child(1),.modal-table td:nth-child(1){width:26%}
+  .modal-table th:nth-child(2),.modal-table td:nth-child(2){width:14%}
+  .modal-table th:nth-child(3),.modal-table td:nth-child(3){width:13%}
+  .modal-table th:nth-child(4),.modal-table td:nth-child(4){width:14%}
+  .modal-table th:nth-child(5),.modal-table td:nth-child(5){width:14%}
+  .modal-table th:nth-child(6),.modal-table td:nth-child(6){width:19%}
+  .modal-table td:nth-child(6) span{padding:4px;font-size:9px;line-height:1.3;display:inline-block;white-space:normal;word-break:keep-all}
+  .close-btn{display:none}
   .stock-code{font-size:14px}
   .stock-name{font-size:13px;margin-left:8px}
   .stock-count{font-size:13px}
@@ -320,6 +373,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei
   .change-code{font-size:20px}
   .change-name{font-size:14px}
   .ranking-table th,.ranking-table td{padding:10px 8px;font-size:12px}
+  /* Main nav cards bigger active highlight */
+  .mobile-nav-card.active .mobile-nav-icon{filter:drop-shadow(0 0 8px rgba(255,255,255,0.6))}
+  /* Better week nav on mobile */
+  .week-nav{flex-direction:row;flex-wrap:wrap;gap:8px;padding:14px}
+  .week-range{font-size:14px;flex:100%}
+  .week-btn{flex:1;min-width:80px;padding:11px 8px;font-size:13px}
 }
 </style>
 </head>
@@ -51516,7 +51575,7 @@ function showStockDetail(stockCode, preferredETF=null){
       </div>
       <div class="chart-container">
         <h3>📈 持股歷史走勢</h3>
-        <div class="chart-hint">🖱 滾輪縮放 &nbsp;|&nbsp; 拖曳平移 &nbsp;|&nbsp; 雙指縮放（手機）&nbsp;|&nbsp; 下方拖曳軸平移</div>
+        <div class="chart-hint">🖱 滾輪縮放 &nbsp;|&nbsp; 拖曳平移 &nbsp;|&nbsp; 👆 雙指縮放 &nbsp;|&nbsp; 下方拖曳選取區間</div>
         <canvas id="${canvasId}" style="width:100%;height:auto;max-height:300px"></canvas>
       </div>
       <div class="modal-table">
@@ -51542,6 +51601,7 @@ function showStockDetail(stockCode, preferredETF=null){
   modal.className = 'modal-overlay';
   modal.onclick = e => { if(e.target===modal) modal.remove(); };
   modal.innerHTML = `<div class="modal-content" onclick="event.stopPropagation()">
+    <div class="sheet-drag-bar" onclick="this.closest('.modal-overlay').remove()"><span></span></div>
     <div class="modal-header">
       <button class="modal-close-btn" onclick="this.closest('.modal-overlay').remove()" title="關閉">✕</button>
       <h2>${stockCode} ${stock.name}</h2>
@@ -51552,6 +51612,8 @@ function showStockDetail(stockCode, preferredETF=null){
     <div class="close-btn"><button class="btn" onclick="this.closest('.modal-overlay').remove()">關閉</button></div>
   </div>`;
   document.body.appendChild(modal);
+  // Swipe down to close (mobile bottom sheet)
+  initSheetSwipe(modal);
 
   const firstData = stock.etf_holdings[firstETF];
   const firstCanvasId = ('chart_'+stockCode+'_'+firstETF).replace(/[^a-zA-Z0-9]/g,'_');
@@ -51590,10 +51652,13 @@ function drawTrendChart(canvasId, history){
     resetBtn.textContent = '⟳ 重置縮放';
     resetBtn.onclick = () => {
       const chart = chartInstances.get(canvasId);
-      if(chart){ chart.resetZoom();
-        // Also reset scrollbar to end
-        const container = canvas.closest('.chart-container');
-        if(container){ const sl = container.querySelector('input[type=range]'); if(sl){ sl.value = sl.max; sl.dispatchEvent(new Event('input')); } }
+      if(chart){
+        chart.resetZoom();
+        // Rebuild range slider to reset to full range
+        const rsWrap = canvas.closest('.chart-container')?.querySelector('.rs-wrap');
+        if(rsWrap){ rsWrap.remove(); }
+        const sortedH = [...(chart.data.labels||[])];
+        setTimeout(()=>addChartRangeSlider(canvasId, chart, sortedH), 50);
       }
     };
     container.appendChild(resetBtn);
@@ -51639,40 +51704,182 @@ function drawTrendChart(canvasId, history){
   chartInstances.set(canvasId, newChart);
 
   // ── 水平拖曳軸 ──
-  addChartScrollbar(canvasId, newChart, labels);
+  addChartRangeSlider(canvasId, newChart, labels);
 }
 
 function addChartScrollbar(canvasId, chart, labels){
+  addChartRangeSlider(canvasId, chart, labels);
+}
+
+function addChartRangeSlider(canvasId, chart, labels){
   const canvas = document.getElementById(canvasId);
   if(!canvas) return;
   const container = canvas.closest('.chart-container');
   if(!container) return;
-  // Remove old scrollbar
-  const old = container.querySelector('.chart-scrollbar-wrap');
+  // Remove old
+  const old = container.querySelector('.rs-wrap');
   if(old) old.remove();
-  if(labels.length <= 20) return; // not needed for small datasets
-  const WIN = Math.min(40, Math.round(labels.length * 0.4));
-  const maxStart = labels.length - WIN;
-  const wrap = document.createElement('div');
-  wrap.className = 'chart-scrollbar-wrap';
-  const lbl = document.createElement('label');
-  lbl.textContent = '◀ 拖曳水平軸 ▶';
-  const slider = document.createElement('input');
-  slider.type = 'range';
-  slider.min = 0; slider.max = maxStart; slider.value = maxStart;
-  // Set initial visible range to last WIN points
-  chart.options.scales.x.min = labels[maxStart];
-  chart.options.scales.x.max = labels[labels.length - 1];
-  chart.update('none');
-  slider.addEventListener('input', () => {
-    const s = parseInt(slider.value);
-    chart.options.scales.x.min = labels[s];
-    chart.options.scales.x.max = labels[Math.min(s + WIN - 1, labels.length - 1)];
+  const n = labels.length;
+  if(n <= 10) return;
+
+  const WIN = Math.min(Math.max(Math.round(n * 0.35), 15), 60);
+  // State: fractions 0..1
+  let L = (n - WIN) / n;  // left thumb (start fraction)
+  let R = 1.0;             // right thumb (end fraction)
+
+  const posToIdx = p => Math.min(n-1, Math.max(0, Math.round(p*(n-1))));
+  const idxToFrac = i => i/(n-1);
+
+  function applyRange(){
+    const li = posToIdx(L), ri = posToIdx(R);
+    if(li >= ri) return;
+    chart.options.scales.x.min = labels[li];
+    chart.options.scales.x.max = labels[ri];
     chart.update('none');
-  });
-  wrap.appendChild(lbl);
-  wrap.appendChild(slider);
+  }
+
+  // Build DOM
+  const wrap = document.createElement('div');
+  wrap.className = 'rs-wrap';
+
+  const dates = document.createElement('div');
+  dates.className = 'rs-dates';
+  const dL = document.createElement('span'); dL.id = canvasId+'_dL';
+  const dR = document.createElement('span'); dR.id = canvasId+'_dR';
+  dL.textContent = labels[posToIdx(L)];
+  dR.textContent = labels[posToIdx(R)];
+  dates.appendChild(dL); dates.appendChild(dR);
+
+  const hint = document.createElement('div');
+  hint.className = 'rs-hint';
+  hint.textContent = '◀ 左右拖曳縮放  ·  中段拖曳平移 ▶';
+
+  const track = document.createElement('div');
+  track.className = 'rs-track';
+
+  const bg = document.createElement('div'); bg.className = 'rs-track-bg';
+  const fill = document.createElement('div'); fill.className = 'rs-fill';
+  const tL = document.createElement('div'); tL.className = 'rs-thumb'; tL.innerHTML='<span class="rs-thumb-icon">◀▶</span>';
+  const tR = document.createElement('div'); tR.className = 'rs-thumb'; tR.innerHTML='<span class="rs-thumb-icon">◀▶</span>';
+
+  track.appendChild(bg); track.appendChild(fill);
+  track.appendChild(tL); track.appendChild(tR);
+  wrap.appendChild(dates); wrap.appendChild(hint); wrap.appendChild(track);
   container.appendChild(wrap);
+
+  function getTrackRect(){ return track.getBoundingClientRect(); }
+  function clientXToFrac(cx){
+    const r = getTrackRect();
+    const pad = 10; // matches rs-track padding
+    return Math.min(1, Math.max(0, (cx - r.left - pad) / (r.width - pad*2)));
+  }
+
+  function updateDOM(){
+    const r = getTrackRect();
+    const usableW = r.width - 20; // track padding 10 each side
+    const lPx = 10 + L * usableW;
+    const rPx = 10 + R * usableW;
+    tL.style.left = lPx + 'px';
+    tR.style.left = rPx + 'px';
+    fill.style.left  = lPx + 'px';
+    fill.style.width = (rPx - lPx) + 'px';
+    dL.textContent = labels[posToIdx(L)] || '';
+    dR.textContent = labels[posToIdx(R)] || '';
+  }
+
+  // Drag logic (mouse + touch unified)
+  let dragTarget = null, dragOffL = 0, dragOffR = 0, startL = 0, startR = 0, startFrac = 0;
+  const minGap = 2/(n-1);
+
+  function onMove(cx){
+    if(!dragTarget) return;
+    const f = clientXToFrac(cx);
+    if(dragTarget === 'L'){
+      L = Math.min(R - minGap, Math.max(0, f));
+    } else if(dragTarget === 'R'){
+      R = Math.max(L + minGap, Math.min(1, f));
+    } else { // fill pan
+      const delta = f - startFrac;
+      const w = startR - startL;
+      L = Math.min(1 - w, Math.max(0, startL + delta));
+      R = L + w;
+    }
+    updateDOM();
+    applyRange();
+  }
+
+  function getClientX(e){ return e.touches ? e.touches[0].clientX : e.clientX; }
+
+  function startDrag(el, type){
+    el.addEventListener('mousedown', e => { e.preventDefault(); dragTarget=type; startFrac=clientXToFrac(getClientX(e)); startL=L; startR=R; el.classList.add('active'); });
+    el.addEventListener('touchstart', e => { e.preventDefault(); dragTarget=type; startFrac=clientXToFrac(getClientX(e)); startL=L; startR=R; el.classList.add('active'); }, {passive:false});
+  }
+  startDrag(tL, 'L');
+  startDrag(tR, 'R');
+  startDrag(fill, 'fill');
+
+  document.addEventListener('mousemove', e => { if(dragTarget) onMove(getClientX(e)); });
+  document.addEventListener('touchmove', e => { if(dragTarget){ e.preventDefault(); onMove(getClientX(e)); } }, {passive:false});
+
+  function endDrag(){
+    if(dragTarget){ [tL,tR,fill].forEach(el=>el.classList.remove('active')); dragTarget=null; }
+  }
+  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('touchend', endDrag);
+
+  // Also allow click on track-bg to jump
+  bg.addEventListener('click', e => {
+    const f = clientXToFrac(e.clientX);
+    const mid = (L+R)/2, w = R-L;
+    L = Math.max(0, Math.min(1-w, f - w/2));
+    R = L + w;
+    updateDOM(); applyRange();
+  });
+
+  // Init
+  updateDOM();
+  applyRange();
+
+  // Keyboard support (focus tR by default)
+  tR.tabIndex = 0; tL.tabIndex = 0;
+  tL.addEventListener('keydown', e => {
+    const step = 1/(n-1);
+    if(e.key==='ArrowLeft'){ L=Math.max(0,L-step); }
+    else if(e.key==='ArrowRight'){ L=Math.min(R-minGap,L+step); }
+    else return;
+    e.preventDefault(); updateDOM(); applyRange();
+  });
+  tR.addEventListener('keydown', e => {
+    const step = 1/(n-1);
+    if(e.key==='ArrowLeft'){ R=Math.max(L+minGap,R-step); }
+    else if(e.key==='ArrowRight'){ R=Math.min(1,R+step); }
+    else return;
+    e.preventDefault(); updateDOM(); applyRange();
+  });
+}
+
+// Swipe-down to close bottom sheet
+function initSheetSwipe(modal){
+  const content = modal.querySelector('.modal-content');
+  if(!content) return;
+  let startY=0, curY=0, isDragging=false;
+  const bar = content.querySelector('.sheet-drag-bar');
+  if(!bar) return;
+  bar.addEventListener('touchstart', e => { startY = e.touches[0].clientY; isDragging=true; content.style.transition='none'; }, {passive:true});
+  document.addEventListener('touchmove', e => {
+    if(!isDragging) return;
+    curY = e.touches[0].clientY;
+    const delta = Math.max(0, curY - startY);
+    content.style.transform = `translateY(${delta}px)`;
+  }, {passive:true});
+  document.addEventListener('touchend', () => {
+    if(!isDragging) return;
+    isDragging = false;
+    const delta = curY - startY;
+    content.style.transition = '';
+    if(delta > 100){ modal.remove(); }
+    else { content.style.transform = ''; }
+  });
 }
 </script>
 </body>

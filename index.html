@@ -288,11 +288,11 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
 .ranking-scroll{border-radius:16px}
 /* ── 雙表格排行榜：左固定 + 右捲動 ─────────────────────────────── */
 .rk-wrap{display:flex;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px var(--shadow)}
-.rk-left{flex:0 0 auto;border-right:2px solid #0284C7;overflow:hidden}
+.rk-left{flex:0 0 33%;max-width:33%;border-right:2px solid #0284C7;overflow:hidden}
 .rk-right{flex:1 1 0;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .rk-left-table,.rk-right-table{border-collapse:collapse;width:100%}
-.rk-left-table{min-width:144px}
-.rk-right-table{min-width:360px}
+.rk-left-table{width:100%;min-width:unset}
+.rk-right-table{min-width:320px}
 .rk-left-table th,.rk-right-table th{
   background:#0369A1;color:white;padding:11px 8px;font-size:13px;font-weight:700;
   text-align:center;white-space:nowrap;border-bottom:2px solid #0284C7}
@@ -336,7 +336,7 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
 .return-negative{color:#E11D48;font-weight:800}
 .return-null{color:var(--text-light);font-size:12px}
 .tracked-tag{display:inline-block;background:#0369A1;color:white;font-size:10px;font-weight:700;
-  padding:2px 5px;border-radius:5px;margin-left:4px;vertical-align:middle;white-space:nowrap}
+  padding:2px 5px;border-radius:5px;white-space:nowrap;line-height:1.6}
 
 /* RWD */
 @media(max-width:768px){
@@ -51666,8 +51666,8 @@ function renderRanking(){
   // ── 雙表格佈局：左側固定 + 右側橫向捲動 ──────────────────────────
   // 左側：排名 + 代碼/名稱（不捲動）
   let leftHead = `<table class="rk-left-table"><thead><tr>
-    <th onclick="sortRankingBy('rank')" style="cursor:pointer;min-width:44px;width:44px;${rankingSortCol==='rank'?'background:#1d4ed8':''}">排名 ${sortArrow('rank')}</th>
-    <th onclick="sortRankingBy('code')" style="cursor:pointer;text-align:left;min-width:100px;${rankingSortCol==='code'?'background:#1d4ed8':''}">代碼 / 名稱 ${sortArrow('code')}</th>
+    <th onclick="sortRankingBy('rank')" style="cursor:pointer;width:36px;min-width:36px;max-width:36px;padding:10px 4px;${rankingSortCol==='rank'?'background:#1d4ed8':''}">排名 ${sortArrow('rank')}</th>
+    <th onclick="sortRankingBy('code')" style="cursor:pointer;text-align:left;padding:10px 6px;${rankingSortCol==='code'?'background:#1d4ed8':''}">代碼/名稱 ${sortArrow('code')}</th>
   </tr></thead><tbody>`;
 
   // 右側：各報酬欄（可橫向捲動）
@@ -51693,12 +51693,11 @@ function renderRanking(){
     const trClass = isTracked ? 'rk-tracked' : 'rk-row';
 
     leftBody += `<tr class="${trClass}">
-      <td style="text-align:center;padding:12px 6px">${rankBadge(etf.rank)}</td>
-      <td style="padding:12px 8px;text-align:left">
-        <div style="font-weight:800;font-size:15px;line-height:1.4;color:var(--text)">
-          ${etf.code}${isTracked ? '<span class="tracked-tag">追蹤中</span>' : ''}
-        </div>
-        <div style="font-size:12px;color:var(--text-muted,#5B7A95);font-weight:600;line-height:1.3;white-space:nowrap;max-width:98px;overflow:hidden;text-overflow:ellipsis">${shortName}</div>
+      <td style="text-align:center;padding:10px 4px;width:36px;min-width:36px;max-width:36px">${rankBadge(etf.rank)}</td>
+      <td style="padding:10px 6px;text-align:left;max-width:0;overflow:hidden">
+        <div style="font-weight:800;font-size:14px;line-height:1.4;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${etf.code}</div>
+        <div style="font-size:11px;color:var(--text-muted,#5B7A95);font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${shortName}</div>
+        ${isTracked ? '<div><span class="tracked-tag" style="margin-left:0;margin-top:3px;display:inline-block">追蹤中</span></div>' : ''}
       </td>
     </tr>`;
 
@@ -52382,16 +52381,12 @@ function _mgRenderTable(data) {
 
   // 把 rows 拆成左側（#, 股票）和右側（其餘欄位）
   const leftRows2 = data.map((item, idx) => {
-    const sign      = item.gainPct >= 0 ? '+' : '';
-    let gainColor   = 'var(--danger,#E11D48)';
-    if (item.gainPct >= 50)      gainColor = '#ff4500';
-    else if (item.gainPct >= 0)  gainColor = '#059669';
     const medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':`${idx+1}`;
     return `<tr onclick="showStockDetail('${item.code}','${item.etf}')" style="cursor:pointer">
-      <td style="text-align:center;font-weight:800;padding:11px 6px;font-size:1em">${medal}</td>
-      <td style="padding:11px 8px">
-        <div style="font-weight:800;color:var(--text);font-size:0.95em;line-height:1.4;white-space:nowrap">${item.code}</div>
-        <div style="font-size:0.72em;color:var(--text-muted,#5B7A95);line-height:1.3;white-space:nowrap">${item.name||''}</div>
+      <td style="text-align:center;font-weight:800;padding:10px 4px;font-size:1em;width:36px;min-width:36px;max-width:36px">${medal}</td>
+      <td style="padding:10px 6px;max-width:0;overflow:hidden">
+        <div style="font-weight:800;color:var(--text);font-size:0.92em;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.code}</div>
+        <div style="font-size:0.72em;color:var(--text-muted,#5B7A95);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name||''}</div>
       </td>
     </tr>`;
   }).join('');
@@ -52428,8 +52423,8 @@ function _mgRenderTable(data) {
       <div class="rk-left">
         <table class="rk-left-table">
           <thead><tr>
-            <th style="text-align:center;min-width:38px;width:38px">#</th>
-            <th style="text-align:left;min-width:100px">股票</th>
+            <th style="text-align:center;width:36px;min-width:36px;max-width:36px;padding:9px 4px">#</th>
+            <th style="text-align:left;padding:9px 6px">股票</th>
           </tr></thead>
           <tbody>${leftRows2}</tbody>
         </table>

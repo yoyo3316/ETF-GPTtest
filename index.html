@@ -51827,8 +51827,9 @@ function drawTrendChart(canvasId, history){
   if(!history || history.length === 0) return;
   if(chartInstances.has(canvasId)) chartInstances.get(canvasId).destroy();
   const sortedHistory = [...history].sort((a,b)=>a.date.localeCompare(b.date));
-  const labels = sortedHistory.map(h => h.date);
-  const counts = sortedHistory.map(h => h.count);
+  // 末尾加空白佔位點，防止最後日期標籤被右側邊界截斷
+  const labels = [...sortedHistory.map(h => h.date), ''];
+  const counts = [...sortedHistory.map(h => h.count), null];
   const canvas = document.getElementById(canvasId);
   if(!canvas) return;
 
@@ -51861,7 +51862,7 @@ function drawTrendChart(canvasId, history){
         label:'張數', data:counts,
         borderColor:'#4F46E5', backgroundColor:'rgba(79,70,229,0.1)',
         borderWidth:3, fill:true, tension:0.4,
-        pointRadius: counts.length>200 ? 1.5 : counts.length>80 ? 2.5 : 4,
+        pointRadius: ctx => ctx.dataIndex === counts.length-1 ? 0 : (counts.length>200 ? 1.5 : counts.length>80 ? 2.5 : 4),
         pointHitRadius: 12,
         pointBackgroundColor:'#4F46E5', pointBorderColor:'white',
         pointBorderWidth:2, pointHoverRadius:7,
@@ -51876,7 +51877,7 @@ function drawTrendChart(canvasId, history){
           titleFont:{size:14,weight:'bold'},bodyFont:{size:13},cornerRadius:8,
           callbacks:{
             title: items => items[0]?.label ?? '',
-            label: item => `張數：${item.parsed.y}`
+            label: item => item.parsed.y == null ? '' : `張數：${item.parsed.y}`
           }
         },
         zoom:{
@@ -51894,8 +51895,17 @@ function drawTrendChart(canvasId, history){
         y:{beginAtZero:false, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:12,weight:'600'}}},
         x:{
           grid:{display:false},
-          ticks:{font:{size:11,weight:'600'}, maxTicksLimit:8, maxRotation:45, autoSkip:true},
-          afterFit(axis){ axis.paddingRight = 20; }
+          ticks:{
+            font:{size:11,weight:'600'},
+            maxTicksLimit:8,
+            maxRotation:45,
+            autoSkip:true,
+            // 空白末尾點不顯示標籤
+            callback(val, idx, ticks){
+              const label = this.getLabelForValue(val);
+              return label || '';
+            }
+          },
         },
       }
     }

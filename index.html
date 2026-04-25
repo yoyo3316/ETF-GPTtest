@@ -285,42 +285,49 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
 
 /* ===== ETF排行榜 ===== */
 .ranking-updated{font-size:13px;color:var(--text-light);text-align:right;margin-bottom:16px}
-.ranking-scroll{overflow-x:auto;border-radius:16px;box-shadow:0 4px 20px var(--shadow)}
-.ranking-table{width:100%;border-collapse:collapse;min-width:480px}
-.ranking-table th{background:linear-gradient(135deg,#0369A1,#0891B2);color:white;padding:11px 8px;font-size:12px;font-weight:700;text-align:center;white-space:nowrap}
-.ranking-table td{padding:10px 8px;border-bottom:1px solid var(--border);font-size:13px;text-align:center;background:white;transition:background 0.2s;white-space:nowrap}
-/* Sticky rank col */
+.ranking-scroll{overflow-x:auto;border-radius:16px;box-shadow:0 4px 20px var(--shadow);-webkit-overflow-scrolling:touch}
+.ranking-table{width:100%;border-collapse:separate;border-spacing:0;min-width:420px}
+.ranking-table th{background:#0369A1;color:white;padding:10px 7px;font-size:12px;font-weight:700;text-align:center;white-space:nowrap;border-bottom:2px solid #0284C7}
+.ranking-table td{padding:9px 7px;border-bottom:1px solid var(--border);font-size:13px;text-align:center;background:white;transition:background 0.2s;white-space:nowrap;vertical-align:middle}
+/* Sticky 排名欄 */
 .ranking-table th:nth-child(1),
-.ranking-table td:nth-child(1){position:sticky;left:0;z-index:2;box-shadow:2px 0 4px rgba(0,0,0,0.08)}
-.ranking-table th:nth-child(1){background:linear-gradient(135deg,#0369A1,#0891B2);z-index:3}
+.ranking-table td:nth-child(1){position:sticky;left:0;z-index:4;width:40px;min-width:40px;max-width:40px;box-shadow:2px 0 5px rgba(0,0,0,0.12)}
+.ranking-table th:nth-child(1){background:#0369A1}
 .ranking-table td:nth-child(1){background:white}
-/* Sticky code+name col */
+/* Sticky 代碼+名稱欄 */
 .ranking-table th:nth-child(2),
-.ranking-table td:nth-child(2){position:sticky;left:40px;z-index:2;text-align:left;box-shadow:2px 0 6px rgba(0,0,0,0.1)}
-.ranking-table th:nth-child(2){background:linear-gradient(135deg,#0369A1,#0891B2);z-index:3}
+.ranking-table td:nth-child(2){position:sticky;left:40px;z-index:4;text-align:left;width:90px;min-width:90px;max-width:90px;box-shadow:3px 0 6px rgba(0,0,0,0.1)}
+.ranking-table th:nth-child(2){background:#0369A1}
 .ranking-table td:nth-child(2){background:white}
+.ranking-table tbody tr:hover td{background:var(--bg-light)}
 .ranking-table tbody tr:hover td:nth-child(1),
 .ranking-table tbody tr:hover td:nth-child(2){background:var(--bg-light)}
+.ranking-table tbody tr.tracked-etf td{background:rgba(3,105,161,0.04)}
 .ranking-table tbody tr.tracked-etf td:nth-child(1),
-.ranking-table tbody tr.tracked-etf td:nth-child(2){background:rgba(3,105,161,0.04)}
+.ranking-table tbody tr.tracked-etf td:nth-child(2){background:rgba(3,105,161,0.06)}
+.ranking-table tbody tr.tracked-etf:hover td{background:rgba(3,105,161,0.1)}
 .ranking-table tbody tr.tracked-etf:hover td:nth-child(1),
 .ranking-table tbody tr.tracked-etf:hover td:nth-child(2){background:rgba(3,105,161,0.1)}
 /* Maxgain table sticky cols */
-.mg-table-wrap{overflow-x:auto;border-radius:12px;box-shadow:0 4px 16px var(--shadow)}
-.mg-table{width:100%;border-collapse:collapse;font-size:0.88em;min-width:520px}
-.mg-table th{background:linear-gradient(135deg,#0369A1,#0891B2);color:white;padding:9px 7px;font-size:0.82em;font-weight:700;white-space:nowrap}
-.mg-table td{padding:9px 7px;border-bottom:1px solid var(--border,#BAD4EA);white-space:nowrap;background:white}
-.mg-table tbody tr:hover td{background:var(--bg-light,#EFF6FF)}
-/* Sticky rank col */
-.mg-table th:nth-child(1),.mg-table td:nth-child(1){position:sticky;left:0;z-index:2;text-align:center;box-shadow:2px 0 4px rgba(0,0,0,0.08)}
-.mg-table th:nth-child(1){background:linear-gradient(135deg,#0369A1,#0891B2);z-index:3}
-.mg-table td:nth-child(1){background:white}
-/* Sticky stock col */
-.mg-table th:nth-child(2),.mg-table td:nth-child(2){position:sticky;left:40px;z-index:2;box-shadow:2px 0 6px rgba(0,0,0,0.1)}
-.mg-table th:nth-child(2){background:linear-gradient(135deg,#0369A1,#0891B2);z-index:3}
-.mg-table td:nth-child(2){background:white}
-.mg-table tbody tr:hover td:nth-child(1),
-.mg-table tbody tr:hover td:nth-child(2){background:var(--bg-light,#EFF6FF)}
+.mg-table-wrap{overflow-x:auto;border-radius:12px;box-shadow:0 4px 16px var(--shadow);-webkit-overflow-scrolling:touch}
+.mg-table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.92em;min-width:460px}
+.mg-table th{background:#0369A1;color:white;padding:9px 6px;font-size:0.83em;font-weight:700;white-space:nowrap;border-bottom:2px solid #0284C7}
+.mg-table td{padding:9px 6px;border-bottom:1px solid var(--border,#BAD4EA);white-space:nowrap;background:#fff;vertical-align:middle}
+.mg-table tbody tr:hover td{background:#EFF6FF}
+/* Sticky 排名欄 - 寬度固定38px */
+.mg-table th:nth-child(1),.mg-table td:nth-child(1){
+  position:sticky;left:0;z-index:4;text-align:center;width:38px;min-width:38px;max-width:38px;
+  box-shadow:2px 0 5px rgba(0,0,0,0.12)}
+.mg-table th:nth-child(1){background:#0369A1}
+.mg-table td:nth-child(1){background:#fff}
+.mg-table tbody tr:hover td:nth-child(1){background:#EFF6FF}
+/* Sticky 股票欄 - 固定在排名欄右側，限制寬度 */
+.mg-table th:nth-child(2),.mg-table td:nth-child(2){
+  position:sticky;left:38px;z-index:4;text-align:left;width:82px;min-width:82px;max-width:82px;
+  box-shadow:3px 0 6px rgba(0,0,0,0.1)}
+.mg-table th:nth-child(2){background:#0369A1}
+.mg-table td:nth-child(2){background:#fff}
+.mg-table tbody tr:hover td:nth-child(2){background:#EFF6FF}
 .ranking-table tbody tr:hover td{background:var(--bg-light)}
 .ranking-table tbody tr.tracked-etf td{background:rgba(3,105,161,0.04)}
 .ranking-table tbody tr.tracked-etf:hover td{background:rgba(3,105,161,0.1)}
@@ -337,19 +344,19 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
 
 /* RWD */
 @media(max-width:768px){
-  body{font-size:15px}
+  body{font-size:16px}
   .hero-header{padding:24px 16px}
   .hero-title{font-size:22px;gap:8px}
   .hero-icon{font-size:26px}
   .hero-subtitle{font-size:13px;margin-bottom:14px}
   .hero-date{font-size:12px;padding:7px 16px}
-  .container{padding:0 10px 30px}
+  .container{padding:0 4px 24px}
   .main-tabs-container{display:none}
   .mobile-nav-grid{display:grid}
   .mobile-nav-card{padding:16px 8px;border-radius:14px}
   .mobile-nav-icon{font-size:30px;margin-bottom:6px}
   .mobile-nav-label{font-size:12px}
-  .content-section{padding:18px;margin:12px 10px;border-radius:16px}
+  .content-section{padding:12px 8px;margin:8px 4px;border-radius:14px}
   .etf-tabs{gap:6px;padding-bottom:16px;margin-bottom:18px}
   .etf-tab{flex:1;min-width:110px;padding:10px 14px;font-size:13px;border-radius:10px}
   .modal-etf-tabs{gap:8px;margin-bottom:18px;padding-bottom:14px}
@@ -423,7 +430,9 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
   .change-card{padding:18px}
   .change-code{font-size:20px}
   .change-name{font-size:14px}
-  .ranking-table th,.ranking-table td{padding:10px 8px;font-size:12px}
+  .ranking-table th,.ranking-table td{padding:9px 6px;font-size:13px}
+  .mg-table{font-size:0.95em}
+  .mg-table th,.mg-table td{padding:9px 6px}
   /* Main nav cards bigger active highlight */
   .mobile-nav-card.active .mobile-nav-icon{filter:drop-shadow(0 0 8px rgba(255,255,255,0.6))}
   /* Better week nav on mobile */
@@ -52323,11 +52332,11 @@ function _mgRenderTable(data) {
     const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx+1}`;
 
     const statusBadge = item.holdStatus === '持有中'
-      ? `<span style="background:rgba(5,150,105,0.12);color:#059669;border-radius:8px;padding:3px 9px;font-size:0.78em;font-weight:700;white-space:nowrap">✅ 持有中</span>`
-      : `<span style="background:rgba(225,29,72,0.1);color:#E11D48;border-radius:8px;padding:3px 9px;font-size:0.78em;font-weight:700;white-space:nowrap">📤 已出清</span>`;
+      ? `<span style="background:rgba(5,150,105,0.12);color:#059669;border-radius:6px;padding:2px 6px;font-size:0.78em;font-weight:700;white-space:nowrap">✅持有</span>`
+      : `<span style="background:rgba(225,29,72,0.1);color:#E11D48;border-radius:6px;padding:2px 6px;font-size:0.78em;font-weight:700;white-space:nowrap">📤出清</span>`;
 
     const sellDisplay = item.sellDate
-      ? `<div style="font-size:0.85em;color:var(--text)">${item.sellDate}</div><div style="margin-top:3px">${statusBadge}</div>`
+      ? `<div style="font-size:0.82em;color:var(--text);line-height:1.3">${item.sellDate}</div><div style="margin-top:2px">${statusBadge}</div>`
       : statusBadge;
 
     return `

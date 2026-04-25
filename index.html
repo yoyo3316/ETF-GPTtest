@@ -521,6 +521,17 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
     <p style="color:var(--text-muted,#5B7A95);font-size:0.88em;margin-bottom:18px">
       追蹤 ETF 每次「新增持股」到「出清」期間的最大股價漲幅（資料來源：FinMind TaiwanStockPrice）
     </p>
+    <!-- Token 輸入（可選）-->
+    <div style="background:#EFF6FF;border-radius:12px;padding:14px 18px;margin-bottom:16px;border:1px solid rgba(14,165,233,0.2)">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:0.85em;font-weight:700;color:#0369A1;white-space:nowrap">🔑 FinMind Token</span>
+        <input id="mgToken" type="password" placeholder="免費版可不填（但請求次數受限）"
+          style="flex:1;min-width:200px;padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:0.85em;background:white;color:var(--text)" />
+        <a href="https://finmindtrade.com" target="_blank"
+          style="font-size:0.78em;color:#0891B2;white-space:nowrap">免費註冊取得 Token →</a>
+      </div>
+      <div style="font-size:0.78em;color:#5B7A95;margin-top:6px">💡 免費帳號每小時約可查詢 30 筆；未登入版更少，股票多時建議填入 Token</div>
+    </div>
     <!-- 篩選列 -->
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
       <select id="mgFilterETF" onchange="applyMaxGainFilter()"
@@ -51953,11 +51964,12 @@ const _priceCache   = {};     // { "code|startDate|endDate": priceArray }
 
 // ── 工具函式 ──────────────────────────────────────────────────────────
 function _mgToISO(d) {
-  const s = String(d);
-  return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+  // 日期格式為 "2026/03/12"，直接替換 / 為 -
+  return String(d).replace(/\//g, '-');
 }
 
 function _mgDays(d1, d2) {
+  // d1, d2 already converted to "YYYY-MM-DD" by _mgToISO
   return Math.round((new Date(d2) - new Date(d1)) / 86400000);
 }
 
@@ -51971,8 +51983,9 @@ function _mgDays(d1, d2) {
 function _mgExtractPeriods() {
   const periods = [];
   for (const [code, info] of Object.entries(stockData)) {
-    if (!info.etfholdings) continue;
-    for (const [etf, etfInfo] of Object.entries(info.etfholdings)) {
+    // 實際資料鍵名是 etf_holdings（底線版本）
+    if (!info.etf_holdings) continue;
+    for (const [etf, etfInfo] of Object.entries(info.etf_holdings)) {
       const hist = etfInfo.history;
       if (!hist || !hist.length) continue;
       let buyDate = null;
@@ -51982,15 +51995,16 @@ function _mgExtractPeriods() {
           if (buyDate) {
             periods.push({
               code, name: info.name,
-              etf, etfName: etfInfo.etfname || etf,
+              etf, etfName: etfInfo.etf_name || etf,
               buyDate, sellDate: rec.date, holdStatus: '已出清'
             });
           }
           buyDate = null;
-        } else if (rec.status === '新增') {
+        } else if (rec.status === '首次出現') {
+          // 首次出現 = 新納入（含出清後再度買進的情況）
           buyDate = rec.date;
         } else if (!buyDate && rec.count > 0) {
-          // 首筆有持股 → 追蹤起點
+          // 前幾筆無 首次出現 狀態時，取第一筆 count>0 作為起點
           buyDate = rec.date;
         }
       }
@@ -52000,7 +52014,7 @@ function _mgExtractPeriods() {
         if (lastRec.count > 0) {
           periods.push({
             code, name: info.name,
-            etf, etfName: etfInfo.etfname || etf,
+            etf, etfName: etfInfo.etf_name || etf,
             buyDate, sellDate: null, holdStatus: '持有中'
           });
         }
@@ -52017,12 +52031,14 @@ async function _mgFetchPrices(code, startDate, endDate) {
 
   try {
     const today = new Date().toISOString().slice(0, 10);
+    const token = (document.getElementById('mgToken')?.value || '').trim();
     const params = new URLSearchParams({
       dataset: 'TaiwanStockPrice',
       data_id: code,
       start_date: startDate,
       end_date: endDate || today
     });
+    if (token) params.set('token', token);
     const res = await fetch(`https://api.finmindtrade.com/api/v4/data?${params}`);
     if (!res.ok) { _priceCache[key] = []; return []; }
     const json = await res.json();
@@ -52136,7 +52152,14 @@ function _mgRenderTable(data) {
   const mgCount = document.getElementById('mgCount');
 
   if (!data || !data.length) {
-    content.innerHTML = '<div class="no-data">目前無符合條件的資料</div>';
+    const isFiltered = document.getElementById('mgFilterETF')?.value !== 'ALL' || 
+                       document.getElementById('mgFilterStatus')?.value !== 'ALL';
+    content.innerHTML = isFiltered
+      ? '<div class="no-data">篩選條件下無符合資料，請調整篩選條件</div>'
+      : '<div class="no-data" style="font-size:0.9em">⚠️ 無法取得股價資料，可能原因：<br><br>' +
+        '① FinMind 免費版請求次數已達上限（每小時限制約 30 次）<br>' +
+        '② 請稍後再試，或前往 <a href="https://finmindtrade.com" target="_blank">finmindtrade.com</a> 免費註冊取得 Token<br>' +
+        '③ 請確認在 HTTP server 環境下執行（非 file:// 直接開啟）</div>';
     if (mgCount) mgCount.textContent = '';
     return;
   }

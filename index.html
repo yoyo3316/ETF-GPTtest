@@ -285,30 +285,25 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
 
 /* ===== ETF排行榜 ===== */
 .ranking-updated{font-size:13px;color:var(--text-light);text-align:right;margin-bottom:16px}
-.ranking-scroll{overflow-x:auto;border-radius:16px;box-shadow:0 4px 20px var(--shadow);-webkit-overflow-scrolling:touch}
-.ranking-table{width:100%;border-collapse:separate;border-spacing:0;min-width:420px}
-.ranking-table th{background:#0369A1;color:white;padding:11px 8px;font-size:13px;font-weight:700;text-align:center;white-space:nowrap;border-bottom:2px solid #0284C7}
-.ranking-table td{padding:12px 8px;border-bottom:1px solid var(--border);font-size:15px;text-align:center;background:white;transition:background 0.2s;white-space:nowrap;vertical-align:middle}
-/* Sticky 排名欄 */
-.ranking-table th:nth-child(1),
-.ranking-table td:nth-child(1){position:sticky;left:0;z-index:4;width:44px;min-width:44px;max-width:44px;box-shadow:2px 0 5px rgba(0,0,0,0.12)}
-.ranking-table th:nth-child(1){background:#0369A1}
-.ranking-table td:nth-child(1){background:white}
-/* Sticky 代碼+名稱欄 */
-.ranking-table th:nth-child(2),
-.ranking-table td:nth-child(2){position:sticky;left:44px;z-index:4;text-align:left;width:96px;min-width:96px;max-width:96px;box-shadow:3px 0 6px rgba(0,0,0,0.1)}
-.ranking-table th:nth-child(2){background:#0369A1}
-.ranking-table td:nth-child(2){background:white}
-.ranking-table tbody tr:hover td{background:#EFF6FF}
-.ranking-table tbody tr:hover td:nth-child(1),
-.ranking-table tbody tr:hover td:nth-child(2){background:#EFF6FF}
-/* tracked-etf: sticky 欄用完全不透明實色，非 sticky 欄可用淡色 */
-.ranking-table tbody tr.tracked-etf td{background:#EBF5FB}
-.ranking-table tbody tr.tracked-etf td:nth-child(1),
-.ranking-table tbody tr.tracked-etf td:nth-child(2){background:#E8F4FD}
-.ranking-table tbody tr.tracked-etf:hover td{background:#D6EAF8}
-.ranking-table tbody tr.tracked-etf:hover td:nth-child(1),
-.ranking-table tbody tr.tracked-etf:hover td:nth-child(2){background:#D6EAF8}
+.ranking-scroll{border-radius:16px}
+/* ── 雙表格排行榜：左固定 + 右捲動 ─────────────────────────────── */
+.rk-wrap{display:flex;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px var(--shadow)}
+.rk-left{flex:0 0 auto;border-right:2px solid #0284C7;overflow:hidden}
+.rk-right{flex:1 1 0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.rk-left-table,.rk-right-table{border-collapse:collapse;width:100%}
+.rk-left-table{min-width:144px}
+.rk-right-table{min-width:360px}
+.rk-left-table th,.rk-right-table th{
+  background:#0369A1;color:white;padding:11px 8px;font-size:13px;font-weight:700;
+  text-align:center;white-space:nowrap;border-bottom:2px solid #0284C7}
+.rk-left-table td,.rk-right-table td{
+  padding:0 8px;border-bottom:1px solid var(--border);font-size:15px;
+  text-align:center;vertical-align:middle;white-space:nowrap}
+.rk-right-table td{min-width:80px}
+/* row 狀態：用 CSS class 取代 onmouseover，避免 JS 字串跳脫問題 */
+.rk-row td{background:white}
+.rk-tracked td{background:#E8F4FD}
+.rk-row:hover td,.rk-tracked:hover td{background:#DBEAFE}
 /* Maxgain table sticky cols */
 .mg-table-wrap{overflow-x:auto;border-radius:12px;box-shadow:0 4px 16px var(--shadow);-webkit-overflow-scrolling:touch}
 .mg-table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.92em;min-width:460px}
@@ -431,8 +426,8 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
   .change-card{padding:18px}
   .change-code{font-size:20px}
   .change-name{font-size:14px}
-  .ranking-table th{padding:10px 7px;font-size:13px}
-  .ranking-table td{padding:12px 7px;font-size:15px}
+  .rk-left-table th,.rk-right-table th{padding:10px 7px;font-size:13px}
+  .rk-left-table td,.rk-right-table td{font-size:15px}
   .mg-table{font-size:0.95em}
   .mg-table th,.mg-table td{padding:9px 6px}
   /* Main nav cards bigger active highlight */
@@ -612,6 +607,36 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
   </div>
 
 <script>
+// ── 雙表格列高同步（全域共用）──────────────────────────────────────
+function syncDualTable(leftSel, rightSel) {
+  // 同步 tbody 列高
+  const sync = (lSel, rSel) => {
+    const lRows = document.querySelectorAll(lSel);
+    const rRows = document.querySelectorAll(rSel);
+    if (!lRows.length || !rRows.length) return;
+    lRows.forEach(r => { r.style.height = ''; });
+    rRows.forEach(r => { r.style.height = ''; });
+    void document.body.offsetHeight; // force reflow
+    lRows.forEach((lr, i) => {
+      if (!rRows[i]) return;
+      const h = Math.max(lr.getBoundingClientRect().height,
+                         rRows[i].getBoundingClientRect().height);
+      if (h > 0) {
+        lr.style.height       = h + 'px';
+        rRows[i].style.height = h + 'px';
+      }
+    });
+  };
+  sync(leftSel + ' thead tr', rightSel + ' thead tr');
+  sync(leftSel + ' tbody tr', rightSel + ' tbody tr');
+}
+function triggerSync(leftSel, rightSel) {
+  // 多次觸發：DOM 剛掛載、字型載入後、捲動到畫面外的列渲染後
+  [0, 80, 250, 600].forEach(ms =>
+    setTimeout(() => syncDualTable(leftSel, rightSel), ms)
+  );
+}
+
 let stockData, processedData, rankingData;
 let allDates = [];
 let currentETF = null, currentMode = 'dashboard';
@@ -51633,41 +51658,70 @@ function renderRanking(){
     if(field){ const av=a[field]??-9999, bv=b[field]??-9999; return (av-bv)*rankingSortDir; }
     return 0;
   });
-  // Build header
   const sortArrow = col => {
     if(rankingSortCol!==col) return '<span style="opacity:0.35;font-size:10px">⇅</span>';
     return rankingSortDir>0 ? '<span style="font-size:10px">▲</span>' : '<span style="font-size:10px">▼</span>';
   };
-  let html = `<table class="ranking-table"><thead><tr>`;
-  for(const c of RANKING_COLS){
-    const isSorted = rankingSortCol===c.key;
-    html += `<th onclick="sortRankingBy('${c.key}')" style="cursor:pointer;user-select:none;${isSorted?'background:#3730A3':''}">${c.label} ${sortArrow(c.key)}</th>`;
+
+  // ── 雙表格佈局：左側固定 + 右側橫向捲動 ──────────────────────────
+  // 左側：排名 + 代碼/名稱（不捲動）
+  let leftHead = `<table class="rk-left-table"><thead><tr>
+    <th onclick="sortRankingBy('rank')" style="cursor:pointer;min-width:44px;width:44px;${rankingSortCol==='rank'?'background:#1d4ed8':''}">排名 ${sortArrow('rank')}</th>
+    <th onclick="sortRankingBy('code')" style="cursor:pointer;text-align:left;min-width:100px;${rankingSortCol==='code'?'background:#1d4ed8':''}">代碼 / 名稱 ${sortArrow('code')}</th>
+  </tr></thead><tbody>`;
+
+  // 右側：各報酬欄（可橫向捲動）
+  const RIGHT_COLS = [
+    {key:'1d', label:'今日', field:'return_1d'},
+    {key:'1w', label:'本週', field:'return_1w'},
+    {key:'1m', label:'本月', field:'return_1m'},
+    {key:'3m', label:'三個月', field:'return_3m'},
+    {key:'6m', label:'六個月', field:'return_6m'},
+    {key:'ytd', label:'今年', field:'return_ytd'},
+  ];
+  let rightHead = `<table class="rk-right-table"><thead><tr>`;
+  for(const col of RIGHT_COLS){
+    const isSorted = rankingSortCol===col.key;
+    rightHead += `<th onclick="sortRankingBy('${col.key}')" style="cursor:pointer;${isSorted?'background:#1d4ed8':''}">${col.label} ${sortArrow(col.key)}</th>`;
   }
-  html += `</tr></thead><tbody>`;
+  rightHead += `</tr></thead><tbody>`;
+
+  let leftBody = '', rightBody = '';
   for(const etf of sorted){
     const isTracked = trackedCodes.has(etf.code);
     const shortName = getShortName(etf.code, etf.name.replace(/^主動/,''));
-    const is3m = rankingSortCol==='3m';
-    html += `<tr class="${isTracked?'tracked-etf':''}">
-      <td>${rankBadge(etf.rank)}</td>
-      <td>
-        <div style="font-weight:800;color:var(--text);font-size:1em;line-height:1.4;white-space:nowrap">
-          ${etf.code}${isTracked?'<span class="tracked-tag">追蹤中</span>':''}
-        </div>
-        <div style="font-size:0.8em;color:var(--text-muted,#5B7A95);line-height:1.3;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:88px">${shortName}</div>
-      </td>
-      <td>${fmtRet(etf.return_1d)}</td>
-      <td>${fmtRet(etf.return_1w)}</td>
-      <td>${fmtRet(etf.return_1m)}</td>
-      <td style="${is3m?'font-weight:800;font-size:15px':''}">${fmtRet(etf.return_3m)}</td>
-      <td>${fmtRet(etf.return_6m)}</td>
-      <td>${fmtRet(etf.return_ytd)}</td>
-    </tr>`;
-  }
-  html += `</tbody></table>`;
-  document.getElementById('rankingTableContainer').innerHTML = html;
-}
+    const trClass = isTracked ? 'rk-tracked' : 'rk-row';
 
+    leftBody += `<tr class="${trClass}">
+      <td style="text-align:center;padding:12px 6px">${rankBadge(etf.rank)}</td>
+      <td style="padding:12px 8px;text-align:left">
+        <div style="font-weight:800;font-size:15px;line-height:1.4;color:var(--text)">
+          ${etf.code}${isTracked ? '<span class="tracked-tag">追蹤中</span>' : ''}
+        </div>
+        <div style="font-size:12px;color:var(--text-muted,#5B7A95);font-weight:600;line-height:1.3;white-space:nowrap;max-width:98px;overflow:hidden;text-overflow:ellipsis">${shortName}</div>
+      </td>
+    </tr>`;
+
+    rightBody += `<tr class="${trClass}">`;
+    for(const col of RIGHT_COLS){
+      const is3m = rankingSortCol === '3m' && col.key === '3m';
+      rightBody += `<td style="${is3m ? 'font-weight:900;font-size:16px' : ''}">${fmtRet(etf[col.field])}</td>`;
+    }
+    rightBody += '</tr>';
+  }
+
+  const leftHtml  = leftHead  + leftBody  + `</tbody></table>`;
+  const rightHtml = rightHead + rightBody + `</tbody></table>`;
+
+  document.getElementById('rankingTableContainer').innerHTML = `
+    <div class="rk-wrap" id="rkWrap">
+      <div class="rk-left"  id="rkLeft">${leftHtml}</div>
+      <div class="rk-right" id="rkRight">${rightHtml}</div>
+    </div>`;
+
+  // 同步左右列高
+  triggerSync('#rkLeft', '#rkRight');
+}
 // ===== 股票明細 Modal =====
 function showStockDetail(stockCode, preferredETF=null){
   const stock = stockData[stockCode];
@@ -52324,69 +52378,76 @@ function _mgRenderTable(data) {
 
   if (mgCount) mgCount.textContent = `共 ${data.length} 筆持股區間`;
 
-  const rows = data.map((item, idx) => {
-    const sign       = item.gainPct >= 0 ? '+' : '';
-    let gainColor    = 'var(--danger,#E11D48)';
-    if (item.gainPct >= 50)     gainColor = '#ff4500';
-    else if (item.gainPct >= 20) gainColor = '#059669';
+  // rows 已拆為 leftRows2 / rightRows2，見下方雙表格渲染
+
+  // 把 rows 拆成左側（#, 股票）和右側（其餘欄位）
+  const leftRows2 = data.map((item, idx) => {
+    const sign      = item.gainPct >= 0 ? '+' : '';
+    let gainColor   = 'var(--danger,#E11D48)';
+    if (item.gainPct >= 50)      gainColor = '#ff4500';
     else if (item.gainPct >= 0)  gainColor = '#059669';
+    const medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':`${idx+1}`;
+    return `<tr onclick="showStockDetail('${item.code}','${item.etf}')" style="cursor:pointer">
+      <td style="text-align:center;font-weight:800;padding:11px 6px;font-size:1em">${medal}</td>
+      <td style="padding:11px 8px">
+        <div style="font-weight:800;color:var(--text);font-size:0.95em;line-height:1.4;white-space:nowrap">${item.code}</div>
+        <div style="font-size:0.72em;color:var(--text-muted,#5B7A95);line-height:1.3;white-space:nowrap">${item.name||''}</div>
+      </td>
+    </tr>`;
+  }).join('');
 
-    const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx+1}`;
-
+  const rightRows2 = data.map((item) => {
+    const sign      = item.gainPct >= 0 ? '+' : '';
+    let gainColor   = 'var(--danger,#E11D48)';
+    if (item.gainPct >= 50)      gainColor = '#ff4500';
+    else if (item.gainPct >= 0)  gainColor = '#059669';
     const statusBadge = item.holdStatus === '持有中'
       ? `<span style="background:rgba(5,150,105,0.12);color:#059669;border-radius:6px;padding:2px 6px;font-size:0.78em;font-weight:700;white-space:nowrap">✅持有</span>`
       : `<span style="background:rgba(225,29,72,0.1);color:#E11D48;border-radius:6px;padding:2px 6px;font-size:0.78em;font-weight:700;white-space:nowrap">📤出清</span>`;
-
     const sellDisplay = item.sellDate
       ? `<div style="font-size:0.82em;color:var(--text);line-height:1.3">${item.sellDate}</div><div style="margin-top:2px">${statusBadge}</div>`
       : statusBadge;
-
-    return `
-      <tr style="cursor:pointer" onclick="showStockDetail('${item.code}','${item.etf}')">
-        <td style="font-weight:800;text-align:center;font-size:1em">${medal}</td>
-        <td>
-          <div style="font-weight:800;color:var(--text);font-size:0.95em;line-height:1.3">${item.code}</div>
-          <div style="font-size:0.72em;color:var(--text-muted,#5B7A95);line-height:1.3">${item.name || ''}</div>
-        </td>
-        <td>
-          <span style="background:var(--bg-light,#EFF6FF);border-radius:6px;padding:3px 7px;font-size:0.78em;font-weight:700;white-space:nowrap">
-            ${getShortName(item.etf, item.etfName)}
-          </span>
-        </td>
-        <td style="font-size:0.82em">${item.buyDate}</td>
-        <td>${sellDisplay}</td>
-        <td style="font-size:0.85em;color:var(--text-muted,#5B7A95)">${item.buyPrice}</td>
-        <td>
-          <div style="font-weight:700;font-size:0.9em">${item.peakPrice}</div>
-          <div style="font-size:0.7em;color:var(--text-muted,#5B7A95)">${item.peakDate}</div>
-        </td>
-        <td style="font-weight:900;font-size:1.1em;color:${gainColor}">${sign}${item.gainPct}%</td>
-        <td style="font-size:0.82em;color:var(--text-muted,#5B7A95)">${item.days}天</td>
-      </tr>`;
+    return `<tr onclick="showStockDetail('${item.code}','${item.etf}')" style="cursor:pointer">
+      <td style="padding:9px 7px">
+        <span style="background:var(--bg-light,#EFF6FF);border-radius:6px;padding:3px 7px;font-size:0.82em;font-weight:700;white-space:nowrap">${getShortName(item.etf,item.etfName)}</span>
+      </td>
+      <td style="font-size:0.85em;padding:9px 7px">${item.buyDate}</td>
+      <td style="padding:9px 7px">${sellDisplay}</td>
+      <td style="font-size:0.88em;color:var(--text-muted,#5B7A95);padding:9px 7px">${item.buyPrice}</td>
+      <td style="padding:9px 7px">
+        <div style="font-weight:700;font-size:0.9em">${item.peakPrice}</div>
+        <div style="font-size:0.7em;color:var(--text-muted,#5B7A95)">${item.peakDate}</div>
+      </td>
+      <td style="font-weight:900;font-size:1.1em;color:${gainColor};padding:9px 7px;white-space:nowrap">${sign}${item.gainPct}%</td>
+      <td style="font-size:0.82em;color:var(--text-muted,#5B7A95);padding:9px 7px">${item.days}天</td>
+    </tr>`;
   }).join('');
 
   content.innerHTML = `
-    <div class="mg-table-wrap">
-      <table class="mg-table">
-        <thead>
-          <tr>
-            <th style="text-align:center">#</th>
-            <th style="text-align:left">股票</th>
-            <th style="text-align:left">ETF</th>
-            <th>買進日</th>
-            <th>出清/狀態</th>
-            <th>買進價</th>
-            <th>最高價</th>
-            <th>最大漲幅 ▼</th>
-            <th>天數</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+    <div class="rk-wrap">
+      <div class="rk-left">
+        <table class="rk-left-table">
+          <thead><tr>
+            <th style="text-align:center;min-width:38px;width:38px">#</th>
+            <th style="text-align:left;min-width:100px">股票</th>
+          </tr></thead>
+          <tbody>${leftRows2}</tbody>
+        </table>
+      </div>
+      <div class="rk-right">
+        <table class="rk-right-table">
+          <thead><tr>
+            <th>ETF</th><th>買進日</th><th>出清/狀態</th><th>買進價</th><th>最高價</th><th>最大漲幅 ▼</th><th>天數</th>
+          </tr></thead>
+          <tbody>${rightRows2}</tbody>
+        </table>
+      </div>
     </div>
     <p style="margin-top:10px;font-size:0.76em;color:var(--text-muted,#5B7A95)">
       ⚠️ 買進開盤價 = ETF 首次納入日開盤價；最高價 = 持股期間每日最高峰值。點擊列可查看詳情。
     </p>`;
+
+  triggerSync('#maxGainContent .rk-left', '#maxGainContent .rk-right');
 }
 </script>
 </body>

@@ -222,6 +222,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei
   color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;
   transition:all 0.2s;opacity:0.8}
 .reset-zoom-btn:hover{opacity:1;transform:translateY(-1px)}
+.chart-scrollbar-wrap{margin-top:10px;padding:0 2px}
+.chart-scrollbar-wrap label{display:block;font-size:11px;color:var(--text-light);margin-bottom:4px;font-weight:600;text-align:center}
+.chart-scrollbar-wrap input[type=range]{width:100%;height:6px;cursor:pointer;accent-color:var(--primary);border-radius:3px}
 
 /* Modal table */
 .modal-table{max-height:400px;overflow-y:auto;border:2px solid var(--border);border-radius:16px;margin-bottom:24px;margin-top:4px}
@@ -424,8 +427,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei
 
   <!-- ETF排行 -->
   <div id="rankingMode" class="content-section hidden">
-    <h3 style="font-size:22px;font-weight:800;margin-bottom:8px;color:var(--text)">🏆 主動式ETF 三個月報酬率排行榜</h3>
-    <div id="rankingUpdatedAt" class="ranking-updated"></div>
+    <h3 style="font-size:22px;font-weight:800;margin-bottom:16px;color:var(--text)">🏆 主動式ETF 報酬率排行榜</h3>
     <div id="rankingTableContainer" class="ranking-scroll">
       <div class="no-data">載入中...</div>
     </div>
@@ -484,7 +486,8 @@ document.addEventListener('DOMContentLoaded', () => {
     allDates = Array.from(dateSet).sort().reverse();
 
     if(allDates.length > 0){
-      latestDataDate = new Date(allDates[0]);
+      const ds = allDates[0];
+      latestDataDate = new Date(ds.length === 8 ? ds.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') : ds);
       const first = processedData[Object.keys(processedData)[0]];
       if(first && first.latest_date) document.getElementById('updateTime').textContent = '最新更新: '+first.latest_date;
     }
@@ -835,9 +838,29 @@ function renderSearchResults(results){
 }
 
 // ===== ETF排行榜 =====
+let rankingSortCol = '3m', rankingSortDir = -1; // default: 3m desc
+
+const RANKING_COLS = [
+  { key:'rank',       label:'排名' },
+  { key:'code',       label:'代碼' },
+  { key:'name',       label:'名稱' },
+  { key:'1d',         label:'今日' },
+  { key:'1w',         label:'本週' },
+  { key:'1m',         label:'本月' },
+  { key:'3m',         label:'三個月' },
+  { key:'6m',         label:'六個月' },
+  { key:'ytd',        label:'今年' },
+];
+const COL_RETURN_MAP = { '1d':'return_1d','1w':'return_1w','1m':'return_1m','3m':'return_3m','6m':'return_6m','ytd':'return_ytd' };
+
+function sortRankingBy(col){
+  if(rankingSortCol === col) rankingSortDir *= -1;
+  else { rankingSortCol = col; rankingSortDir = -1; }
+  renderRanking();
+}
+
 function renderRanking(){
   if(!rankingData){ document.getElementById('rankingTableContainer').innerHTML='<div class="no-data">排行資料尚未載入，請確認 active_etf_ranking.json 已部署</div>'; return; }
-  document.getElementById('rankingUpdatedAt').textContent = '資料時間：'+rankingData.updated_at+'　來源：MoneyDJ';
   const trackedCodes = new Set(Object.keys(processedData||{}));
   const fmtRet = v => {
     if(v==null) return '<span class="return-null">--</span>';
@@ -849,12 +872,31 @@ function renderRanking(){
     const cls = r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':'rank-other';
     return `<span class="rank-badge ${cls}">${r}</span>`;
   };
-  let html = `<table class="ranking-table"><thead><tr>
-    <th>排名</th><th>代碼</th><th>名稱</th><th>今日</th><th>本週</th><th>本月</th><th>三個月</th><th>六個月</th><th>今年</th>
-  </tr></thead><tbody>`;
-  for(const etf of rankingData.ranking){
+  // Sort
+  const sorted = [...rankingData.ranking].sort((a,b) => {
+    const col = rankingSortCol;
+    if(col === 'rank'){ const av=a.rank??999, bv=b.rank??999; return (av-bv)*rankingSortDir; }
+    if(col === 'code'){ return a.code.localeCompare(b.code)*rankingSortDir; }
+    if(col === 'name'){ return a.name.localeCompare(b.name)*rankingSortDir; }
+    const field = COL_RETURN_MAP[col];
+    if(field){ const av=a[field]??-9999, bv=b[field]??-9999; return (av-bv)*rankingSortDir; }
+    return 0;
+  });
+  // Build header
+  const sortArrow = col => {
+    if(rankingSortCol!==col) return '<span style="opacity:0.35;font-size:10px">⇅</span>';
+    return rankingSortDir>0 ? '<span style="font-size:10px">▲</span>' : '<span style="font-size:10px">▼</span>';
+  };
+  let html = `<table class="ranking-table"><thead><tr>`;
+  for(const c of RANKING_COLS){
+    const isSorted = rankingSortCol===c.key;
+    html += `<th onclick="sortRankingBy('${c.key}')" style="cursor:pointer;user-select:none;${isSorted?'background:#3730A3':''}">${c.label} ${sortArrow(c.key)}</th>`;
+  }
+  html += `</tr></thead><tbody>`;
+  for(const etf of sorted){
     const isTracked = trackedCodes.has(etf.code);
     const shortName = getShortName(etf.code, etf.name.replace(/^主動/,''));
+    const is3m = rankingSortCol==='3m';
     html += `<tr class="${isTracked?'tracked-etf':''}">
       <td>${rankBadge(etf.rank)}</td>
       <td style="font-weight:800;color:var(--text)">${etf.code}${isTracked?'<span class="tracked-tag">追蹤中</span>':''}</td>
@@ -862,7 +904,7 @@ function renderRanking(){
       <td>${fmtRet(etf.return_1d)}</td>
       <td>${fmtRet(etf.return_1w)}</td>
       <td>${fmtRet(etf.return_1m)}</td>
-      <td style="font-weight:800;font-size:15px">${fmtRet(etf.return_3m)}</td>
+      <td style="${is3m?'font-weight:800;font-size:15px':''}">${fmtRet(etf.return_3m)}</td>
       <td>${fmtRet(etf.return_6m)}</td>
       <td>${fmtRet(etf.return_ytd)}</td>
     </tr>`;
@@ -898,7 +940,7 @@ function showStockDetail(stockCode, preferredETF=null){
       </div>
       <div class="chart-container">
         <h3>📈 持股歷史走勢</h3>
-        <div class="chart-hint">🖱 滾輪縮放 &nbsp;|&nbsp; 拖曳平移 &nbsp;|&nbsp; 雙指縮放（手機）</div>
+        <div class="chart-hint">🖱 滾輪縮放 &nbsp;|&nbsp; 拖曳平移 &nbsp;|&nbsp; 雙指縮放（手機）&nbsp;|&nbsp; 下方拖曳軸平移</div>
         <canvas id="${canvasId}" style="width:100%;height:auto;max-height:300px"></canvas>
       </div>
       <div class="modal-table">
@@ -970,7 +1012,14 @@ function drawTrendChart(canvasId, history){
     const resetBtn = document.createElement('button');
     resetBtn.className = 'reset-zoom-btn';
     resetBtn.textContent = '⟳ 重置縮放';
-    resetBtn.onclick = () => { const chart = chartInstances.get(canvasId); if(chart) chart.resetZoom(); };
+    resetBtn.onclick = () => {
+      const chart = chartInstances.get(canvasId);
+      if(chart){ chart.resetZoom();
+        // Also reset scrollbar to end
+        const container = canvas.closest('.chart-container');
+        if(container){ const sl = container.querySelector('input[type=range]'); if(sl){ sl.value = sl.max; sl.dispatchEvent(new Event('input')); } }
+      }
+    };
     container.appendChild(resetBtn);
   }
 
@@ -983,9 +1032,10 @@ function drawTrendChart(canvasId, history){
         label:'張數', data:counts,
         borderColor:'#4F46E5', backgroundColor:'rgba(79,70,229,0.1)',
         borderWidth:3, fill:true, tension:0.4,
-        pointRadius: counts.length>50 ? 0 : 4,
+        pointRadius: counts.length>200 ? 1.5 : counts.length>80 ? 2.5 : 4,
+        pointHitRadius: 12,
         pointBackgroundColor:'#4F46E5', pointBorderColor:'white',
-        pointBorderWidth:2, pointHoverRadius:6,
+        pointBorderWidth:2, pointHoverRadius:7,
       }]
     },
     options:{
@@ -993,7 +1043,12 @@ function drawTrendChart(canvasId, history){
       plugins:{
         legend:{display:false},
         tooltip:{backgroundColor:'rgba(15,23,42,0.9)',padding:12,
-          titleFont:{size:14,weight:'bold'},bodyFont:{size:13},cornerRadius:8},
+          titleFont:{size:14,weight:'bold'},bodyFont:{size:13},cornerRadius:8,
+          callbacks:{
+            title: items => items[0]?.label ?? '',
+            label: item => `張數：${item.parsed.y}`
+          }
+        },
         zoom:{
           zoom:{ wheel:{enabled:true}, pinch:{enabled:true}, mode:'x' },
           pan:{ enabled:true, mode:'x' },
@@ -1006,7 +1061,42 @@ function drawTrendChart(canvasId, history){
     }
   });
   chartInstances.set(canvasId, newChart);
+
+  // ── 水平拖曳軸 ──
+  addChartScrollbar(canvasId, newChart, labels);
 }
+
+function addChartScrollbar(canvasId, chart, labels){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const container = canvas.closest('.chart-container');
+  if(!container) return;
+  // Remove old scrollbar
+  const old = container.querySelector('.chart-scrollbar-wrap');
+  if(old) old.remove();
+  if(labels.length <= 20) return; // not needed for small datasets
+  const WIN = Math.min(40, Math.round(labels.length * 0.4));
+  const maxStart = labels.length - WIN;
+  const wrap = document.createElement('div');
+  wrap.className = 'chart-scrollbar-wrap';
+  const lbl = document.createElement('label');
+  lbl.textContent = '◀ 拖曳水平軸 ▶';
+  const slider = document.createElement('input');
+  slider.type = 'range';
+  slider.min = 0; slider.max = maxStart; slider.value = maxStart;
+  // Set initial visible range to last WIN points
+  chart.options.scales.x.min = labels[maxStart];
+  chart.options.scales.x.max = labels[labels.length - 1];
+  chart.update('none');
+  slider.addEventListener('input', () => {
+    const s = parseInt(slider.value);
+    chart.options.scales.x.min = labels[s];
+    chart.options.scales.x.max = labels[Math.min(s + WIN - 1, labels.length - 1)];
+    chart.update('none');
+  });
+  wrap.appendChild(lbl);
+  wrap.appendChild(slider);
+  container.appendChild(wrap);
 </script>
 </body>
 </html>

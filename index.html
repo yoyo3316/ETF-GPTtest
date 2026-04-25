@@ -94,7 +94,7 @@ body{font-family:'Noto Sans TC','DM Sans',-apple-system,BlinkMacSystemFont,"Micr
 /* Content sections */
 .content-section{background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);
   border-radius:20px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,0.15),0 1px 0 rgba(14,165,233,0.2);
-  margin:20px;border:1px solid rgba(14,165,233,0.12)}
+  margin:20px;border:1px solid rgba(14,165,233,0.12);contain:layout style}
 .content-section.hidden{display:none}
 
 /* ETF Tabs */
@@ -631,8 +631,8 @@ function syncDualTable(leftSel, rightSel) {
   sync(leftSel + ' tbody tr', rightSel + ' tbody tr');
 }
 function triggerSync(leftSel, rightSel) {
-  // 多次觸發：DOM 剛掛載、字型載入後、捲動到畫面外的列渲染後
-  [0, 80, 250, 600].forEach(ms =>
+  // 兩次觸發：DOM 掛載後 + 字型/圖片載入後
+  [0, 200].forEach(ms =>
     setTimeout(() => syncDualTable(leftSel, rightSel), ms)
   );
 }
@@ -51273,14 +51273,18 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCalendar();
     renderChanges();
 
+    let _searchTimer;
     document.getElementById('searchInput').addEventListener('input', e => {
-      const keyword = e.target.value.toLowerCase();
-      const results = [];
-      for(const [code, info] of Object.entries(stockData)){
-        if(code.toLowerCase().includes(keyword) || (info.name && info.name.toLowerCase().includes(keyword)))
-          results.push({code, name:info.name, holdings:info.etf_holdings});
-      }
-      renderSearchResults(results);
+      clearTimeout(_searchTimer);
+      _searchTimer = setTimeout(() => {
+        const keyword = e.target.value.toLowerCase();
+        const results = [];
+        for(const [code, info] of Object.entries(stockData)){
+          if(code.toLowerCase().includes(keyword) || (info.name && info.name.toLowerCase().includes(keyword)))
+            results.push({code, name:info.name, holdings:info.etf_holdings});
+        }
+        renderSearchResults(results);
+      }, 200);
     });
 
     document.getElementById('loadingOverlay').remove();
@@ -51790,7 +51794,13 @@ function showStockDetail(stockCode, preferredETF=null){
 
   const firstData = stock.etf_holdings[firstETF];
   const firstCanvasId = ('chart_'+stockCode+'_'+firstETF).replace(/[^a-zA-Z0-9]/g,'_');
-  setTimeout(() => drawTrendChart(firstCanvasId, firstData.history), 100);
+  // requestIdleCallback 在瀏覽器閒置時繪圖，不阻塞 Modal 開啟動畫
+  const _drawFn = () => drawTrendChart(firstCanvasId, firstData.history);
+  if (window.requestIdleCallback) {
+    requestIdleCallback(_drawFn, { timeout: 600 });
+  } else {
+    setTimeout(_drawFn, 150);
+  }
 }
 
 function switchModalETF(event, stockCode, etfCode){
@@ -51803,7 +51813,12 @@ function switchModalETF(event, stockCode, etfCode){
   const stock = stockData[stockCode];
   if(stock && stock.etf_holdings[etfCode]){
     const canvasId = ('chart_'+stockCode+'_'+etfCode).replace(/[^a-zA-Z0-9]/g,'_');
-    setTimeout(() => drawTrendChart(canvasId, stock.etf_holdings[etfCode].history), 100);
+    const _switchDraw = () => drawTrendChart(canvasId, stock.etf_holdings[etfCode].history);
+    if (window.requestIdleCallback) {
+      requestIdleCallback(_switchDraw, { timeout: 400 });
+    } else {
+      setTimeout(_switchDraw, 100);
+    }
   }
 }
 
@@ -51854,6 +51869,7 @@ function drawTrendChart(canvasId, history){
     },
     options:{
       responsive:true, maintainAspectRatio:true,
+      layout:{ padding:{ right:18, left:4 } },
       plugins:{
         legend:{display:false},
         tooltip:{backgroundColor:'rgba(15,23,42,0.9)',padding:12,
@@ -51866,11 +51882,21 @@ function drawTrendChart(canvasId, history){
         zoom:{
           zoom:{ wheel:{enabled:true}, pinch:{enabled:true}, mode:'x' },
           pan:{ enabled:true, mode:'x' },
+        },
+        decimation:{
+          enabled: true,
+          algorithm: 'lttb',
+          samples: 60,
+          threshold: 60,
         }
       },
       scales:{
         y:{beginAtZero:false, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{font:{size:12,weight:'600'}}},
-        x:{grid:{display:false}, ticks:{font:{size:11,weight:'600'}, maxTicksLimit:10}},
+        x:{
+          grid:{display:false},
+          ticks:{font:{size:11,weight:'600'}, maxTicksLimit:8, maxRotation:45, autoSkip:true},
+          afterFit(axis){ axis.paddingRight = 20; }
+        },
       }
     }
   });
